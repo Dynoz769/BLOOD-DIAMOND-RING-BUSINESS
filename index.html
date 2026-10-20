@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Blood Diamond Ring Business</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="gem">◆</span>
+      <div>
+        <h1>BLOOD DIAMOND RING BUSINESS</h1>
+        <p class="sub">Weekly submission tracker</p>
+      </div>
+    </div>
+    <div class="week-ctl">
+      <label for="weekSelect">Week</label>
+      <select id="weekSelect"></select>
+      <button id="newWeekBtn" class="btn primary">Start next week</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="stats" id="stats"></section>
+
+    <section class="toolbar">
+      <input id="search" type="search" placeholder="Search name…">
+      <select id="filterFamily"><option value="">All families</option></select>
+      <select id="filterSpecialist"><option value="">All specialists</option></select>
+      <select id="filterStatus">
+        <option value="">All status</option>
+        <option>Completed</option>
+        <option>Pending</option>
+        <option>KIV</option>
+        <option>N/A</option>
+      </select>
+      <span class="spacer"></span>
+      <button id="addBtn" class="btn primary">+ Add member</button>
+      <button id="quotaBtn" class="btn">Quotas</button>
+      <div class="menu">
+        <button class="btn" id="moreBtn">More ▾</button>
+        <div class="menu-list" id="moreMenu" hidden>
+          <button data-act="csv">Export week (CSV)</button>
+          <button data-act="backup">Download backup (JSON)</button>
+          <button data-act="restore">Restore backup…</button>
+          <button data-act="print">Print</button>
+          <button data-act="reset" class="danger">Reset to sample data</button>
+        </div>
+      </div>
+      <input type="file" id="restoreFile" accept="application/json" hidden>
+    </section>
+
+    <div id="readonlyNote" class="note" hidden></div>
+
+    <div class="table-wrap">
+      <table id="sheet">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Hierarchy</th>
+            <th>Family</th>
+            <th class="red">Class</th>
+            <th class="red">Specialist</th>
+            <th>Namelist</th>
+            <th>Monday</th>
+            <th>Tuesday</th>
+            <th>Wednesday</th>
+            <th>Total submission</th>
+            <th>Status</th>
+            <th>Pending Qty</th>
+            <th title="Advance credit brought forward from earlier weeks">Credit B/F</th>
+            <th>Adv Submission</th>
+            <th title="Shortfall carried over from earlier weeks">Due Submission</th>
+            <th>Remarks</th>
+            <th class="noprint"></th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+        <tfoot id="foot"></tfoot>
+      </table>
+    </div>
+
+    <ul class="legend" id="legend"></ul>
+  </main>
+
+  <dialog id="memberDlg">
+    <form method="dialog" id="memberForm">
+      <h2 id="memberDlgTitle">Member</h2>
+      <div class="grid">
+        <label>Name<input name="name" required></label>
+        <label>Hierarchy<input name="hierarchy" list="dlHierarchy"></label>
+        <label>Family<input name="family" list="dlFamily"></label>
+        <label>Class<input name="cls" list="dlClass"></label>
+        <label>Specialist<select name="specialist" id="specialistSelect"></select></label>
+        <label>Remarks<input name="remarks"></label>
+        <label class="check"><input type="checkbox" name="exempt"> Exempt (no quota / N/A)</label>
+        <label class="check"><input type="checkbox" name="kiv"> KIV (keep in view)</label>
+      </div>
+      <datalist id="dlHierarchy"></datalist>
+      <datalist id="dlFamily"></datalist>
+      <datalist id="dlClass"></datalist>
+      <div class="actions">
+        <button type="button" class="btn danger" id="deleteMemberBtn">Delete</button>
+        <span class="spacer"></span>
+        <button value="cancel" class="btn" formnovalidate>Cancel</button>
+        <button value="ok" class="btn primary">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="quotaDlg">
+    <form method="dialog" id="quotaForm">
+      <h2>Weekly quotas (pcs)</h2>
+      <div id="quotaList" class="quota-list"></div>
+      <button type="button" class="btn" id="addQuotaBtn">+ Add specialist</button>
+      <div class="actions">
+        <span class="spacer"></span>
+        <button value="cancel" class="btn" formnovalidate>Cancel</button>
+        <button value="ok" class="btn primary">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="weekDlg">
+    <form method="dialog">
+      <h2>Start next week?</h2>
+      <p id="weekDlgText"></p>
+      <ul class="small">
+        <li>This week is saved to history (read-only).</li>
+        <li>Daily submissions and Adv Submission reset to 0.</li>
+        <li>Any extra (submitted over the requirement + Adv Submission) becomes <b>Credit B/F</b>.</li>
+        <li>Any shortfall becomes <b>Due Submission</b> (not for KIV or exempt members).</li>
+      </ul>
+      <div class="actions">
+        <span class="spacer"></span>
+        <button value="cancel" class="btn">Cancel</button>
+        <button value="ok" class="btn primary">Start week</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
