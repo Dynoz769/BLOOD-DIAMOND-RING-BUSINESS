@@ -1,0 +1,507 @@
+{
+  "version": 4,
+  "week": 43,
+  "quotas": {
+    "Shooter": 150,
+    "Melee": 250,
+    "Melee & Shooter": 100,
+    "Farming": 250
+  },
+  "members": [
+    {
+      "id": "mvh0selot3o845",
+      "order": 0,
+      "hierarchy": "Oyabun",
+      "family": "Nakamura",
+      "cls": "Kumicho",
+      "specialist": "-",
+      "name": "Don Nakamura",
+      "days": {
+        "mon": 0,
+        "tue": 0,
+        "wed": 0
+      },
+      "carry": 0,
+      "due": 0,
+      "exempt": true,
+      "away": "",
+      "discordName": ""
+    },
+    {
+      "id": "mvh0selpu4blbu",
+      "order": 1,
+      "hierarchy": "Aneki",
+      "family": "Kizuna",
+      "cls": "Oka-San",
+      "specialist": "Melee",
+      "name": "Leia Yuki",
+      "days": {
+        "mon": 0,
+        "tue": 0,
+        "wed": 0
+      },
+      "carry": 0,
+      "due": 0,
+      "exempt": true,
+      "away": "",
+      "discordName": ""
+    },
+    {
+      "id": "mvh0selprx2npv",
+      "order": 2,
+      "hierarchy": "Aniki",
+      "family": "Kizuna",
+      "cls": "Kigyo-Shatei",
+      "specialist": "Melee",
+      "name": "Ragna Silver",
+      "days": {
+        "mon": 0,
+        "tue": 0,
+        "wed": 0
+      },
+      "carry": 0,
+      "due": 0,
+      "exempt": true,
+      "away": "",
+      "discordName": ""
+    },
+    {
+      "id": "mvh0selpp2mcww",
+      "order": 3,
+      "hierarchy": "Aniki",
+      "family": "Kizuna",
+      "cls": "Kigyo-Shatei",
+      "specialist": "Melee",
+      "name": "Nick Leon",
+      "days": {
+        "mon": 0,
+        "tue": 250,
+        "wed": 0
+      },
+      "carry": 0,
+      "due": 0,
+      "exempt": false,
+      "away": "",
+      "discordName": ""
+    },
+    {
+      "id": "mvh0selpw5z75t",
+      "order": 4,
+      "hierarchy": "Aniki",
+      "family": "Kizuna",
+      "cls": "Wakagashira",
+      "specialist": "Melee & Shooter",
+      "name": "Ajol Rentaka",
+      "days": {
+        "mon": 0,
+        "tue": 150,
+        "wed": 0
+      },
+      "carry": 0,
+      "due": 0,
+      "exempt": false,
+      "away": "",
+      "discordName": ""
+    },
+    {
+      "id": "mvh0selp3e7aad",
+      "order": 5,
+      "hierarchy": "Aniki",
+      "family": "Kizuna",
+      "cls": "Jun-Kouseiin",
+      "specialist": "Melee",
+      "name": "Ezzy Tezu",
+      "days": {
+        "mon": 500,
+        "tue": 0,
+        "wed": 0
+      },
+      "carry": 0,
+      "due": 0,
+      "exempt": false,
+      "away": "",
+      "discordName": ""
+    },
+    {
+      "id": "mvh0selprkg0j1",
+      "order": 6,
+      "hierarchy": "Onee-San",
+      "family": "Kurogawa",
+      "cls": "Kage",
+      "specialist": "Melee",
+      "name": "Reyna Kurogawa",
+      "days": {
+        "mon": 0,
+        "tue": 266,
+        "wed": 0
+      },
+      "carry": 0,
+      "due": 0,
+      "exempt": false,
+      "away": "",
+      "discordName": ""
+    },
+    {
+      "id": "mvh0selp2podc7",
+      "order": 7,
+      "hierarchy": "Kyoudai",
+      "family": "Kurogawa",
+      "cls": "Kage",
+      "specialist": "Melee",
+      "name": "Ryouta Kurogawa",
+      "days": {
+        "mon": 0,
+        "tue": 0,
+        "wed": 0
+      },
+      "carry": 0,
+      "due": 0,
+      "exempt": false,
+      "away": "",
+      "discordName": "HK | Ryouta"
+    },
+    {
+      "id": "mvh0selpsofhye",
+      "order": 8,
+      "hierarchy": "Kyoudai",
+      "family": "Kurogawa",
+      "cls": "Kage",
+      "specialist": "Farming",
+      "name": "Takeru Kurogawa",
+      "days": {
+        "mon": 0,
+        "tue": 0,
+        "wed": 0
+      },
+      "carry": 0,
+      "due": 0,
+      "exempt": false,
+      "away": "",
+      "discordName": "HK | Takeru Kurogawa (PEMANGGNG)"
+    },
+    {
+      "id": "mvh0selps5aze1",
+      "order": 9,
+      "hierarchy": "Kyoudai",
+      "family": "Akuma",
+      "cls": "Wakagashira",
+      "specialist": "Melee & Shooter",
+      "name": "Mikey Ryou",
+      "days": {
+        "mon": 0,
+        "tue": 188,
+        "wed": 0
+      },
+      "carry": 0,
+      "due": 0,
+      "exempt": false,
+      "away": "",
+      "discordName": ""
+    },
+    {
+      "id": "mvh0selqfsdki3",
+      "order": 10,
+      "hierarchy": "Kyoudai",
+      "family": "Akuma",
+      "cls": "Wakashu",
+      "specialist": "Melee & Shooter",
+      "name": "Jin Mori",
+      "days": {
+        "mon": 0,
+        "tue": 0,
+        "wed": 0
+      },
+      "carry": 0,
+      "due": 0,
+      "exempt": false,
+      "away": "",
+      "discordName": "HK | JIN MORI ( MONKEY KING )"
+    },
+    {
+      "id": "mvh0selq6wgwwi",
+      "order": 11,
+      "hierarchy": "Kyoudai",
+      "family": "Akuma",
+      "cls": "Wakashu",
+      "specialist": "Melee & Shooter",
+      "name": "Joe Apollo",
+      "days": {
+        "mon": 0,
+        "tue": 0,
+        "wed": 0
+      },
+      "carry": 0,
+      "due": 0,
+      "exempt": false,
+      "away": "",
+      "discordName": ""
+    },
+    {
+      "id": "mvh0selq7ruay0",
+      "order": 12,
+      "hierarchy": "Kyoudai",
+      "family": "Akuma",
+      "cls": "Wakashu",
+      "specialist": "Melee & Shooter",
+      "name": "Kaizer DMC",
+      "days": {
+        "mon": 300,
+        "tue": 0,
+        "wed": 0
+      },
+      "carry": 0,
+      "due": 0,
+      "exempt": false,
+      "away": "",
+      "discordName": ""
+    },
+    {
+      "id": "mvh0selq8g4q03",
+      "order": 13,
+      "hierarchy": "Kyoudai",
+      "family": "Akuma",
+      "cls": "Wakashu",
+      "specialist": "Melee & Shooter",
+      "name": "Shin Nightingale",
+      "days": {
+        "mon": 0,
+        "tue": 0,
+        "wed": 0
+      },
+      "carry": 0,
+      "due": 0,
+      "exempt": false,
+      "away": "",
+      "discordName": "HK | SHIN ( MULUT PUAKA )"
+    },
+    {
+      "id": "mvh0selqsg1uu3",
+      "order": 14,
+      "hierarchy": "Kyoudai",
+      "family": "Arakawa",
+      "cls": "Kage",
+      "specialist": "Shooter",
+      "name": "Ash Lee Astrid ARK",
+      "days": {
+        "mon": 0,
+        "tue": 0,
+        "wed": 0
+      },
+      "carry": 0,
+      "due": 0,
+      "exempt": false,
+      "away": "",
+      "discordName": "HK | Ash Lee ARK"
+    },
+    {
+      "id": "mvh0selqiyjyzw",
+      "order": 15,
+      "hierarchy": "Kyoudai",
+      "family": "Arakawa",
+      "cls": "Kage",
+      "specialist": "Shooter",
+      "name": "Ayra Astrid ARK",
+      "days": {
+        "mon": 0,
+        "tue": 0,
+        "wed": 0
+      },
+      "carry": 0,
+      "due": 0,
+      "exempt": false,
+      "away": "",
+      "discordName": ""
+    },
+    {
+      "id": "mvh0selqpyecfd",
+      "order": 16,
+      "hierarchy": "Kyoudai",
+      "family": "Arakawa",
+      "cls": "Kage",
+      "specialist": "Shooter",
+      "name": "Supreme Toman Astrid ARK",
+      "days": {
+        "mon": 0,
+        "tue": 0,
+        "wed": 0
+      },
+      "carry": 0,
+      "due": 0,
+      "exempt": false,
+      "away": "",
+      "discordName": "HK | Supreme ARK"
+    },
+    {
+      "id": "mvh0selqocyr00",
+      "order": 17,
+      "hierarchy": "Kyoudai",
+      "family": "Kizuna",
+      "cls": "Kage",
+      "specialist": "Farming",
+      "name": "Dahlia Yasmin",
+      "days": {
+        "mon": 0,
+        "tue": 0,
+        "wed": 0
+      },
+      "carry": 0,
+      "due": 0,
+      "exempt": false,
+      "away": "KIV",
+      "discordName": ""
+    },
+    {
+      "id": "mvh0selqe4fohe",
+      "order": 18,
+      "hierarchy": "Kyoudai",
+      "family": "Kizuna",
+      "cls": "Kage",
+      "specialist": "Shooter",
+      "name": "El Tiger",
+      "days": {
+        "mon": 0,
+        "tue": 0,
+        "wed": 0
+      },
+      "carry": 0,
+      "due": 0,
+      "exempt": false,
+      "away": "",
+      "discordName": "HK | Eltiger"
+    },
+    {
+      "id": "mvh0selq0hnuz5",
+      "order": 19,
+      "hierarchy": "Kyoudai",
+      "family": "Kizuna",
+      "cls": "Kage",
+      "specialist": "Farming",
+      "name": "Gashima",
+      "days": {
+        "mon": 0,
+        "tue": 0,
+        "wed": 0
+      },
+      "carry": 0,
+      "due": 0,
+      "exempt": false,
+      "away": "KIV",
+      "discordName": ""
+    },
+    {
+      "id": "mvh0selqdmvcxc",
+      "order": 20,
+      "hierarchy": "Kyoudai",
+      "family": "Kizuna",
+      "cls": "Kage",
+      "specialist": "Melee",
+      "name": "Kisaragi Rize",
+      "days": {
+        "mon": 0,
+        "tue": 0,
+        "wed": 0
+      },
+      "carry": 0,
+      "due": 0,
+      "exempt": false,
+      "away": "",
+      "discordName": ""
+    },
+    {
+      "id": "mvh0selqnw2gy0",
+      "order": 21,
+      "hierarchy": "Kyoudai",
+      "family": "Kizuna",
+      "cls": "Kage",
+      "specialist": "Farming",
+      "name": "Malik Nuh",
+      "days": {
+        "mon": 0,
+        "tue": 269,
+        "wed": 0
+      },
+      "carry": 0,
+      "due": 0,
+      "exempt": false,
+      "away": "",
+      "discordName": ""
+    },
+    {
+      "id": "mvh0selqfjg2ae",
+      "order": 22,
+      "hierarchy": "Kyoudai",
+      "family": "Kizuna",
+      "cls": "Kage",
+      "specialist": "Shooter",
+      "name": "Rafiq Azlan",
+      "days": {
+        "mon": 0,
+        "tue": 250,
+        "wed": 0
+      },
+      "carry": 0,
+      "due": 0,
+      "exempt": false,
+      "away": "",
+      "discordName": ""
+    },
+    {
+      "id": "mvh0selqwpng8s",
+      "order": 23,
+      "hierarchy": "Kyoudai",
+      "family": "Kizuna",
+      "cls": "Kage",
+      "specialist": "Farming",
+      "name": "Ryu Yukimura",
+      "days": {
+        "mon": 0,
+        "tue": 1255,
+        "wed": 0
+      },
+      "carry": 0,
+      "due": 0,
+      "exempt": false,
+      "away": "",
+      "discordName": ""
+    },
+    {
+      "id": "mvh0selqg6ytxj",
+      "order": 24,
+      "hierarchy": "Kyoudai",
+      "family": "Kizuna",
+      "cls": "Wakashu",
+      "specialist": "Melee & Shooter",
+      "name": "Tizzy Goh Anran",
+      "days": {
+        "mon": 0,
+        "tue": 151,
+        "wed": 0
+      },
+      "carry": 0,
+      "due": 0,
+      "exempt": false,
+      "away": "",
+      "discordName": ""
+    },
+    {
+      "id": "mvh0selqdn3en5",
+      "order": 25,
+      "hierarchy": "Kyoudai",
+      "family": "Shinigami",
+      "cls": "Kage",
+      "specialist": "Shooter",
+      "name": "Lao D. Shinigami",
+      "days": {
+        "mon": 0,
+        "tue": 151,
+        "wed": 0
+      },
+      "carry": 0,
+      "due": 0,
+      "exempt": false,
+      "away": "",
+      "discordName": ""
+    }
+  ],
+  "history": []
+}
