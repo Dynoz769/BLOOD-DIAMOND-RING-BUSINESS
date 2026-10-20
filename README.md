@@ -39,9 +39,30 @@ A browser-based version of the weekly submission sheet. No install and no server
 
 ## Data storage
 
-Data is saved in your browser's local storage, so it stays on the device and browser you use. To move it to another device or share it, use **More → Download backup** and then **Restore backup** on the other device. The backup also contains the Discord webhook URL; anyone who has that URL can post to your channel, so share backups only with people you trust.
+**Without Firebase** (default, `js/firebase-config.js` is `null`): data is saved in the browser's local storage, so it stays on that device and browser. Use **More → Download backup / Restore backup** to move it. The backup also contains the Discord webhook URL; anyone who has that URL can post to your channel, so share backups only with people you trust.
+
+**With Firebase** (shared online database): admins log in with email + password, and every change syncs live to everyone who has the page open. The top bar shows the status (● Online / Saving / Not saved).
 
 The first time you open it, the app loads the Week 43 data from the original sheet. **More → Reset to sample data** brings that data back.
+
+### Firebase setup (one time, free)
+
+1. Go to https://console.firebase.google.com → **Add project**. Google Analytics is not needed.
+2. **Build → Realtime Database → Create database**. Pick the nearest location (e.g. Singapore) and start in **locked mode**.
+3. **Rules** tab: paste the contents of `database.rules.json` → **Publish**.
+4. **Build → Authentication → Get started → Email/Password → Enable**. Then **Users → Add user** for each admin and copy their **User UID**.
+5. Back in **Realtime Database → Data**: add a key `admins`, and under it add each admin UID with the value `true`:
+   ```
+   admins
+     ├─ AbCdEf123...: true
+     └─ XyZ987...:   true
+   ```
+6. **Project settings (⚙️) → General → Your apps → Web (</>)** → register the app → copy the `firebaseConfig` object into `js/firebase-config.js` (replace `null`). Include `databaseURL`.
+7. **Authentication → Settings → Authorized domains**: add `<user>.github.io` when hosting on GitHub Pages.
+
+The first admin who logs in to an empty database uploads the data from their browser. Firebase web config values are not secret; access is protected by the login and the rules (only UIDs under `admins` can read or write).
+
+After changing files, run `python3 tools/build_single.py` to rebuild the single-file `blood-diamond-tracker.html`.
 
 ## Hosting on GitHub Pages
 

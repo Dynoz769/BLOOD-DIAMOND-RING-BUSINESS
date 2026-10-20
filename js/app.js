@@ -1,6 +1,7 @@
 /* Blood Diamond Ring Business – weekly submission tracker.
- * Everything is stored in the browser (localStorage). Use "Download backup"
- * to move data between devices. */
+ * Data is kept in the browser (localStorage). When js/firebase-config.js holds a
+ * Firebase config, admins sign in and the data is shared live through the
+ * Firebase Realtime Database instead. */
 (function () {
   'use strict';
 
@@ -108,6 +109,7 @@
   function save() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
     catch (e) { alert('Could not save data in this browser: ' + e.message); }
+    cloudPush();
   }
 
   const isCurrent = () => viewWeek === state.week;
@@ -684,6 +686,101 @@
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
+
+
+  // ---------- Cloud database (Firebase) ----------
+  // The whole state lives at /bdrb/state. Only UIDs listed under /admins may read or
+  // write it (see database.rules.json). Last write wins, which is fine for a few admins.
+  const CLOUD_PATH = 'bdrb/state';
+  const cloud = { ref: null, user: null, lastJson: '' };
+  const loginDlg = $('#loginDlg');
+
+  function setCloudStatus(text, kind) {
+    const el = $('#cloudStatus');
+    el.hidden = false;
+    el.textContent = text;
+    el.className = 'cloud ' + (kind || '');
+  }
+
+  // Firebase drops empty arrays/objects and may turn arrays into keyed objects.
+  function fromCloud(v) {
+    const arr = x => (Array.isArray(x) ? x.filter(Boolean) : Object.values(x || {}));
+    const fixMember = m => ({ days: {}, carry: 0, due: 0, away: '', discordName: '', discordId: '', ...m,
+      days: { ...Object.fromEntries(DAYS.map(d => [d.key, 0])), ...(m.days || {}) } });
+    v.members = arr(v.members).map(fixMember);
+    v.history = arr(v.history).map(h => ({ ...h, members: arr(h.members).map(fixMember) }));
+    v.quotas = v.quotas || {};
+    return migrate(v);
+  }
+
+  function cloudPush() {
+    if (!cloud.ref || !cloud.user) return;
+    const json = JSON.stringify(state);
+    if (json === cloud.lastJson) return;
+    cloud.lastJson = json;
+    setCloudStatus('● Saving…', 'busy');
+    cloud.ref.set(JSON.parse(json))
+      .then(() => setCloudStatus(`● Online – ${cloud.user.email}`, 'ok'))
+      .catch(err => setCloudStatus('● Not saved: ' + err.message, 'bad'));
+  }
+
+  function startCloud() {
+    const config = window.BDRB_FIREBASE_CONFIG;
+    if (!config || !window.firebase) return false;
+    firebase.initializeApp(config);
+    const ref = firebase.database().ref(CLOUD_PATH);
+    $('#logoutBtn').hidden = false;
+    $('#logoutBtn').addEventListener('click', () => firebase.auth().signOut());
+    loginDlg.addEventListener('cancel', e => e.preventDefault());   // no closing with Esc
+    $('#loginForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const f = e.target;
+      $('#loginError').textContent = '';
+      try {
+        await firebase.auth().signInWithEmailAndPassword(f.email.value.trim(), f.password.value);
+      } catch (err) {
+        $('#loginError').textContent = 'Login failed: ' + err.message;
+      }
+    });
+
+    firebase.auth().onAuthStateChanged(user => {
+      if (cloud.ref) cloud.ref.off();
+      cloud.ref = null;
+      cloud.user = user;
+      if (!user) {
+        setCloudStatus('● Signed out', 'bad');
+        if (!loginDlg.open) loginDlg.showModal();
+        return;
+      }
+      if (loginDlg.open) loginDlg.close();
+      setCloudStatus('● Connecting…', 'busy');
+      ref.on('value', snap => {
+        cloud.ref = ref;
+        const v = snap.val();
+        if (!v) {                      // empty database: upload what this browser has
+          cloud.lastJson = '';
+          cloudPush();
+          return;
+        }
+        const incoming = fromCloud(v);
+        const json = JSON.stringify(incoming);
+        setCloudStatus(`● Online – ${user.email}`, 'ok');
+        if (json === cloud.lastJson) return;   // our own write coming back
+        cloud.lastJson = json;
+        state = incoming;
+        try { localStorage.setItem(STORAGE_KEY, json); } catch (e) { /* cache only */ }
+        const weeks = [state.week, ...state.history.map(h => h.week)];
+        if (!weeks.includes(viewWeek)) viewWeek = state.week;
+        render();
+      }, err => {
+        setCloudStatus('● No access', 'bad');
+        alert(`This account is not an admin yet.\n\nAsk the owner to add this UID under "admins" in the Firebase Realtime Database:\n\n${user.uid}`);
+      });
+    });
+    return true;
+  }
+
+  if (!startCloud()) setCloudStatus('● Local only (this browser)', '');
 
   render();
 })();
