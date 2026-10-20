@@ -101,6 +101,8 @@ input, select {
 .btn:hover { filter: brightness(.96); }
 .btn.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
 .btn.danger, .menu-list .danger { color: var(--warn); }
+.btn.discord { background: #5865f2; border-color: #5865f2; color: #fff; }
+.btn:disabled { opacity: .55; cursor: default; }
 .btn.small { padding: 2px 8px; font-size: 12px; }
 
 .menu { position: relative; }
@@ -168,6 +170,8 @@ td input.num {
   padding: 3px 4px;
 }
 td input.txt { width: 110px; padding: 3px 4px; }
+td input.cls { width: 120px; text-align: center; }
+td select.spec { padding: 3px 4px; }
 td input:disabled { background: transparent; border-color: transparent; color: inherit; }
 
 .status { font-weight: 600; padding: 2px 8px; border-radius: 10px; font-size: 12px; }
@@ -200,6 +204,9 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
 dialog h2 { margin: 0 0 12px; font-size: 18px; }
 .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .grid label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); }
+.grid.one { grid-template-columns: 1fr; }
+.grid textarea { font: 13px/1.4 ui-monospace, monospace; padding: 8px; border: 1px solid var(--line); border-radius: 6px; resize: vertical; color: var(--text); }
+.grid p { margin: 0; }
 .grid label.check { flex-direction: row; align-items: center; gap: 6px; color: var(--text); font-size: 14px; }
 .actions { display: flex; gap: 8px; margin-top: 16px; }
 .quota-list { display: grid; gap: 6px; margin-bottom: 10px; }
@@ -253,6 +260,7 @@ dialog h2 { margin: 0 0 12px; font-size: 18px; }
       <span class="spacer"></span>
       <button id="addBtn" class="btn primary">+ Add member</button>
       <button id="quotaBtn" class="btn">Quotas</button>
+      <button id="discordBtn" class="btn discord">Tag pending on Discord</button>
       <div class="menu">
         <button class="btn" id="moreBtn">More ▾</button>
         <div class="menu-list" id="moreMenu" hidden>
@@ -308,6 +316,7 @@ dialog h2 { margin: 0 0 12px; font-size: 18px; }
         <label>Class<input name="cls" list="dlClass"></label>
         <label>Specialist<select name="specialist" id="specialistSelect"></select></label>
         <label>Remarks<input name="remarks"></label>
+        <label>Discord User ID<input name="discordId" inputmode="numeric" placeholder="e.g. 123456789012345678"></label>
         <label class="check"><input type="checkbox" name="exempt"> Exempt (no quota / N/A)</label>
         <label class="check"><input type="checkbox" name="kiv"> KIV (keep in view)</label>
       </div>
@@ -319,6 +328,30 @@ dialog h2 { margin: 0 0 12px; font-size: 18px; }
         <span class="spacer"></span>
         <button value="cancel" class="btn" formnovalidate>Cancel</button>
         <button value="ok" class="btn primary">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <datalist id="dlClassAll"></datalist>
+
+  <dialog id="discordDlg">
+    <form id="discordForm" onsubmit="return false">
+      <h2>Tag pending members on Discord</h2>
+      <div class="grid one">
+        <label>Discord webhook URL
+          <input name="webhook" type="url" placeholder="https://discord.com/api/webhooks/…" autocomplete="off">
+        </label>
+        <p class="small">Discord: Server Settings → Integrations → Webhooks → New Webhook → pick the channel → Copy Webhook URL.</p>
+        <p id="discordMissing" class="note" hidden></p>
+        <label>Message preview
+          <textarea id="discordPreview" rows="10" readonly></textarea>
+        </label>
+      </div>
+      <p id="discordStatus" class="small"></p>
+      <div class="actions">
+        <span class="spacer"></span>
+        <button type="button" class="btn" id="discordCancelBtn">Cancel</button>
+        <button type="button" class="btn discord" id="discordSendBtn">Send to Discord</button>
       </div>
     </form>
   </dialog>
@@ -362,6 +395,9 @@ dialog h2 { margin: 0 0 12px; font-size: 18px; }
   'use strict';
 
   const STORAGE_KEY = 'bdrb-state-v1';
+  const CLASSES = ['Kumicho', 'Oka-San', 'Kigyo-Shatei', 'Wakagashira', 'Jun-Kouseiin', 'Kage', 'Wakashu'];
+  const DISCORD_WEBHOOK_RE = /^https:\/\/(?:(?:ptb|canary)\.)?discord(?:app)?\.com\/api\/webhooks\/\d+\/[\w-]+/;
+  const DISCORD_LIMIT = 1900;   // Discord allows 2000 chars per message; keep some margin
   const DAYS = [
     { key: 'mon', label: 'Monday' },
     { key: 'tue', label: 'Tuesday' },
@@ -560,7 +596,9 @@ dialog h2 { margin: 0 0 12px; font-size: 18px; }
   function renderTable() {
     const editable = isCurrent();
     const list = filtered();
-    const maxQuota = Math.max(1, ...Object.values(viewedQuotas()));
+    const quotas = viewedQuotas();
+    const maxQuota = Math.max(1, ...Object.values(quotas));
+    $('#dlClassAll').innerHTML = uniq([...CLASSES, ...state.members.map(x => x.cls)]).map(v => `<option value="${esc(v)}">`).join('');
     const rowsHtml = list.map(({ m, c }, i) => {
       const na = c.status === 'N/A';
       const dayCells = DAYS.map(d => `<td>${na && !m.days[d.key] && !editable ? '-' : numInput(m.id, 'day.' + d.key, m.days[d.key], !editable)}</td>`).join('');
@@ -570,12 +608,14 @@ dialog h2 { margin: 0 0 12px; font-size: 18px; }
         pendingCell = `<div class="pending"><span class="val">${c.pending}</span><span class="bar">${w ? `<i style="width:${w}%"></i>` : ''}</span></div>`;
       }
       const statusCls = na ? 'NA' : c.status;
+      const specs = ['-', ...Object.keys(quotas)];
+      if (!specs.includes(m.specialist)) specs.push(m.specialist);
       return `<tr class="${m.kiv ? 'kiv' : ''}">
         <td>${i + 1}</td>
         <td>${esc(m.hierarchy)}</td>
         <td>${esc(m.family)}</td>
-        <td>${esc(m.cls)}</td>
-        <td>${esc(m.specialist)}</td>
+        <td>${editable ? `<input class="txt cls" list="dlClassAll" data-id="${m.id}" data-field="cls" value="${esc(m.cls)}">` : esc(m.cls)}</td>
+        <td>${editable ? `<select class="spec" data-id="${m.id}" data-field="specialist">${specs.map(v => `<option ${v === m.specialist ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select>` : esc(m.specialist)}</td>
         <td class="name" title="${c.quota != null ? `Quota ${c.quota}/week` : 'No quota'}">${esc(m.name)}</td>
         ${dayCells}
         <td title="${c.carry ? `Includes ${Math.min(c.carry, c.required)} pcs from earlier advance` : ''}"><b>${na && !c.total ? '-' : c.total}</b>${c.carry ? ` <small class="from-adv">(adv ${Math.min(c.carry, c.required)})</small>` : ''}</td>
@@ -667,7 +707,7 @@ dialog h2 { margin: 0 0 12px; font-size: 18px; }
     const m = state.members.find(x => x.id === id);
     if (!m) return;
     const f = el.dataset.field;
-    if (f === 'remarks') m.remarks = el.value;
+    if (f === 'remarks' || f === 'cls' || f === 'specialist') m[f] = el.value.trim();
     else {
       const v = Math.max(0, Math.floor(Number(el.value) || 0));
       if (f.startsWith('day.')) m.days[f.slice(4)] = v;
@@ -701,7 +741,7 @@ dialog h2 { margin: 0 0 12px; font-size: 18px; }
     const opts = k => uniq(state.members.map(x => x[k])).map(v => `<option value="${esc(v)}">`).join('');
     $('#dlHierarchy').innerHTML = opts('hierarchy');
     $('#dlFamily').innerHTML = opts('family');
-    $('#dlClass').innerHTML = opts('cls');
+    $('#dlClass').innerHTML = uniq([...CLASSES, ...state.members.map(x => x.cls)]).map(v => `<option value="${esc(v)}">`).join('');
     f.name.value = m ? m.name : '';
     f.hierarchy.value = m ? m.hierarchy : 'Kyoudai';
     f.family.value = m ? m.family : '';
@@ -710,6 +750,7 @@ dialog h2 { margin: 0 0 12px; font-size: 18px; }
     f.remarks.value = m ? m.remarks : '';
     f.exempt.checked = m ? m.exempt : false;
     f.kiv.checked = m ? m.kiv : false;
+    f.discordId.value = m ? (m.discordId || '') : '';
     memberDlg.showModal();
   }
   memberDlg.addEventListener('close', () => {
@@ -718,7 +759,7 @@ dialog h2 { margin: 0 0 12px; font-size: 18px; }
     const data = {
       name: f.name.value.trim(), hierarchy: f.hierarchy.value.trim(), family: f.family.value.trim(),
       cls: f.cls.value.trim(), specialist: f.specialist.value, remarks: f.remarks.value,
-      exempt: f.exempt.checked, kiv: f.kiv.checked,
+      exempt: f.exempt.checked, kiv: f.kiv.checked, discordId: f.discordId.value.replace(/\D/g, ''),
     };
     if (!data.name) return;
     if (editingId) Object.assign(state.members.find(x => x.id === editingId), data);
@@ -786,6 +827,84 @@ dialog h2 { margin: 0 0 12px; font-size: 18px; }
     viewWeek = state.week;
     save(); render();
   });
+
+  // ---------- Discord ----------
+  const discordDlg = $('#discordDlg');
+  const settings = () => (state.settings = state.settings || { webhook: '' });
+
+  function pendingMembers() {
+    return viewedMembers()
+      .map(m => ({ m, c: calc(m, viewedQuotas(), viewWeek) }))
+      .filter(({ m, c }) => c.status === 'Pending' && !m.kiv);
+  }
+
+  // Returns an array of message strings, each under Discord's length limit.
+  function buildDiscordMessages() {
+    const list = pendingMembers();
+    const header = `**BLOOD DIAMOND RING BUSINESS – Week ${viewWeek}**\n` +
+      (list.length ? `Reminder: ${list.length} member(s) still **PENDING** submission:` : 'All members have completed their submission. 🎉');
+    const lines = list.map(({ m, c }, i) => {
+      const who = m.discordId ? `<@${m.discordId}> (${m.name})` : `**${m.name}**`;
+      return `${i + 1}. ${who} – ${m.specialist} – short **${-c.pending}** pcs`;
+    });
+    const msgs = [];
+    let cur = header;
+    lines.forEach(l => {
+      if ((cur + '\n' + l).length > DISCORD_LIMIT) { msgs.push(cur); cur = l; }
+      else cur += '\n' + l;
+    });
+    msgs.push(cur);
+    return msgs;
+  }
+
+  function openDiscord() {
+    const f = $('#discordForm');
+    f.webhook.value = settings().webhook || '';
+    const list = pendingMembers();
+    const missing = list.filter(({ m }) => !m.discordId).map(({ m }) => m.name);
+    $('#discordMissing').hidden = !missing.length;
+    $('#discordMissing').textContent = missing.length
+      ? `No Discord ID (will not be tagged, name only): ${missing.join(', ')}. Add it via Edit → Discord User ID.` : '';
+    $('#discordPreview').value = buildDiscordMessages().join('\n\n');
+    $('#discordStatus').textContent = '';
+    discordDlg.showModal();
+  }
+
+  async function sendDiscord() {
+    const f = $('#discordForm');
+    const url = f.webhook.value.trim();
+    if (!DISCORD_WEBHOOK_RE.test(url)) {
+      $('#discordStatus').textContent = 'Please paste a valid Discord webhook URL.';
+      return;
+    }
+    settings().webhook = url;
+    save();
+    const ids = [...new Set(pendingMembers().map(({ m }) => m.discordId).filter(Boolean))];
+    const btn = $('#discordSendBtn');
+    btn.disabled = true;
+    $('#discordStatus').textContent = 'Sending…';
+    try {
+      for (const content of buildDiscordMessages()) {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          // only ping the listed users, never @everyone/@here or roles
+          body: JSON.stringify({ content, allowed_mentions: { parse: [], users: ids.slice(0, 100) } }),
+        });
+        if (!res.ok) throw new Error(`Discord replied ${res.status} ${await res.text()}`);
+      }
+      $('#discordStatus').textContent = '✅ Sent to Discord.';
+      setTimeout(() => discordDlg.close(), 1200);
+    } catch (err) {
+      $('#discordStatus').textContent = '❌ Failed: ' + err.message;
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  $('#discordBtn').addEventListener('click', openDiscord);
+  $('#discordSendBtn').addEventListener('click', sendDiscord);
+  $('#discordCancelBtn').addEventListener('click', () => discordDlg.close());
 
   // ---------- More menu ----------
   const menu = $('#moreMenu');

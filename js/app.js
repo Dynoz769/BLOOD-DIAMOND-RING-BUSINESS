@@ -5,6 +5,9 @@
   'use strict';
 
   const STORAGE_KEY = 'bdrb-state-v1';
+  const CLASSES = ['Kumicho', 'Oka-San', 'Kigyo-Shatei', 'Wakagashira', 'Jun-Kouseiin', 'Kage', 'Wakashu'];
+  const DISCORD_WEBHOOK_RE = /^https:\/\/(?:(?:ptb|canary)\.)?discord(?:app)?\.com\/api\/webhooks\/\d+\/[\w-]+/;
+  const DISCORD_LIMIT = 1900;   // Discord allows 2000 chars per message; keep some margin
   const DAYS = [
     { key: 'mon', label: 'Monday' },
     { key: 'tue', label: 'Tuesday' },
@@ -203,7 +206,9 @@
   function renderTable() {
     const editable = isCurrent();
     const list = filtered();
-    const maxQuota = Math.max(1, ...Object.values(viewedQuotas()));
+    const quotas = viewedQuotas();
+    const maxQuota = Math.max(1, ...Object.values(quotas));
+    $('#dlClassAll').innerHTML = uniq([...CLASSES, ...state.members.map(x => x.cls)]).map(v => `<option value="${esc(v)}">`).join('');
     const rowsHtml = list.map(({ m, c }, i) => {
       const na = c.status === 'N/A';
       const dayCells = DAYS.map(d => `<td>${na && !m.days[d.key] && !editable ? '-' : numInput(m.id, 'day.' + d.key, m.days[d.key], !editable)}</td>`).join('');
@@ -213,12 +218,14 @@
         pendingCell = `<div class="pending"><span class="val">${c.pending}</span><span class="bar">${w ? `<i style="width:${w}%"></i>` : ''}</span></div>`;
       }
       const statusCls = na ? 'NA' : c.status;
+      const specs = ['-', ...Object.keys(quotas)];
+      if (!specs.includes(m.specialist)) specs.push(m.specialist);
       return `<tr class="${m.kiv ? 'kiv' : ''}">
         <td>${i + 1}</td>
         <td>${esc(m.hierarchy)}</td>
         <td>${esc(m.family)}</td>
-        <td>${esc(m.cls)}</td>
-        <td>${esc(m.specialist)}</td>
+        <td>${editable ? `<input class="txt cls" list="dlClassAll" data-id="${m.id}" data-field="cls" value="${esc(m.cls)}">` : esc(m.cls)}</td>
+        <td>${editable ? `<select class="spec" data-id="${m.id}" data-field="specialist">${specs.map(v => `<option ${v === m.specialist ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select>` : esc(m.specialist)}</td>
         <td class="name" title="${c.quota != null ? `Quota ${c.quota}/week` : 'No quota'}">${esc(m.name)}</td>
         ${dayCells}
         <td title="${c.carry ? `Includes ${Math.min(c.carry, c.required)} pcs from earlier advance` : ''}"><b>${na && !c.total ? '-' : c.total}</b>${c.carry ? ` <small class="from-adv">(adv ${Math.min(c.carry, c.required)})</small>` : ''}</td>
@@ -310,7 +317,7 @@
     const m = state.members.find(x => x.id === id);
     if (!m) return;
     const f = el.dataset.field;
-    if (f === 'remarks') m.remarks = el.value;
+    if (f === 'remarks' || f === 'cls' || f === 'specialist') m[f] = el.value.trim();
     else {
       const v = Math.max(0, Math.floor(Number(el.value) || 0));
       if (f.startsWith('day.')) m.days[f.slice(4)] = v;
@@ -344,7 +351,7 @@
     const opts = k => uniq(state.members.map(x => x[k])).map(v => `<option value="${esc(v)}">`).join('');
     $('#dlHierarchy').innerHTML = opts('hierarchy');
     $('#dlFamily').innerHTML = opts('family');
-    $('#dlClass').innerHTML = opts('cls');
+    $('#dlClass').innerHTML = uniq([...CLASSES, ...state.members.map(x => x.cls)]).map(v => `<option value="${esc(v)}">`).join('');
     f.name.value = m ? m.name : '';
     f.hierarchy.value = m ? m.hierarchy : 'Kyoudai';
     f.family.value = m ? m.family : '';
@@ -353,6 +360,7 @@
     f.remarks.value = m ? m.remarks : '';
     f.exempt.checked = m ? m.exempt : false;
     f.kiv.checked = m ? m.kiv : false;
+    f.discordId.value = m ? (m.discordId || '') : '';
     memberDlg.showModal();
   }
   memberDlg.addEventListener('close', () => {
@@ -361,7 +369,7 @@
     const data = {
       name: f.name.value.trim(), hierarchy: f.hierarchy.value.trim(), family: f.family.value.trim(),
       cls: f.cls.value.trim(), specialist: f.specialist.value, remarks: f.remarks.value,
-      exempt: f.exempt.checked, kiv: f.kiv.checked,
+      exempt: f.exempt.checked, kiv: f.kiv.checked, discordId: f.discordId.value.replace(/\D/g, ''),
     };
     if (!data.name) return;
     if (editingId) Object.assign(state.members.find(x => x.id === editingId), data);
@@ -429,6 +437,84 @@
     viewWeek = state.week;
     save(); render();
   });
+
+  // ---------- Discord ----------
+  const discordDlg = $('#discordDlg');
+  const settings = () => (state.settings = state.settings || { webhook: '' });
+
+  function pendingMembers() {
+    return viewedMembers()
+      .map(m => ({ m, c: calc(m, viewedQuotas(), viewWeek) }))
+      .filter(({ m, c }) => c.status === 'Pending' && !m.kiv);
+  }
+
+  // Returns an array of message strings, each under Discord's length limit.
+  function buildDiscordMessages() {
+    const list = pendingMembers();
+    const header = `**BLOOD DIAMOND RING BUSINESS – Week ${viewWeek}**\n` +
+      (list.length ? `Reminder: ${list.length} member(s) still **PENDING** submission:` : 'All members have completed their submission. 🎉');
+    const lines = list.map(({ m, c }, i) => {
+      const who = m.discordId ? `<@${m.discordId}> (${m.name})` : `**${m.name}**`;
+      return `${i + 1}. ${who} – ${m.specialist} – short **${-c.pending}** pcs`;
+    });
+    const msgs = [];
+    let cur = header;
+    lines.forEach(l => {
+      if ((cur + '\n' + l).length > DISCORD_LIMIT) { msgs.push(cur); cur = l; }
+      else cur += '\n' + l;
+    });
+    msgs.push(cur);
+    return msgs;
+  }
+
+  function openDiscord() {
+    const f = $('#discordForm');
+    f.webhook.value = settings().webhook || '';
+    const list = pendingMembers();
+    const missing = list.filter(({ m }) => !m.discordId).map(({ m }) => m.name);
+    $('#discordMissing').hidden = !missing.length;
+    $('#discordMissing').textContent = missing.length
+      ? `No Discord ID (will not be tagged, name only): ${missing.join(', ')}. Add it via Edit → Discord User ID.` : '';
+    $('#discordPreview').value = buildDiscordMessages().join('\n\n');
+    $('#discordStatus').textContent = '';
+    discordDlg.showModal();
+  }
+
+  async function sendDiscord() {
+    const f = $('#discordForm');
+    const url = f.webhook.value.trim();
+    if (!DISCORD_WEBHOOK_RE.test(url)) {
+      $('#discordStatus').textContent = 'Please paste a valid Discord webhook URL.';
+      return;
+    }
+    settings().webhook = url;
+    save();
+    const ids = [...new Set(pendingMembers().map(({ m }) => m.discordId).filter(Boolean))];
+    const btn = $('#discordSendBtn');
+    btn.disabled = true;
+    $('#discordStatus').textContent = 'Sending…';
+    try {
+      for (const content of buildDiscordMessages()) {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          // only ping the listed users, never @everyone/@here or roles
+          body: JSON.stringify({ content, allowed_mentions: { parse: [], users: ids.slice(0, 100) } }),
+        });
+        if (!res.ok) throw new Error(`Discord replied ${res.status} ${await res.text()}`);
+      }
+      $('#discordStatus').textContent = '✅ Sent to Discord.';
+      setTimeout(() => discordDlg.close(), 1200);
+    } catch (err) {
+      $('#discordStatus').textContent = '❌ Failed: ' + err.message;
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  $('#discordBtn').addEventListener('click', openDiscord);
+  $('#discordSendBtn').addEventListener('click', sendDiscord);
+  $('#discordCancelBtn').addEventListener('click', () => discordDlg.close());
 
   // ---------- More menu ----------
   const menu = $('#moreMenu');

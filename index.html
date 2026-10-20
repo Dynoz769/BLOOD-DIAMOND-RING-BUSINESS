@@ -39,6 +39,7 @@
       <span class="spacer"></span>
       <button id="addBtn" class="btn primary">+ Add member</button>
       <button id="quotaBtn" class="btn">Quotas</button>
+      <button id="discordBtn" class="btn discord">Tag pending on Discord</button>
       <div class="menu">
         <button class="btn" id="moreBtn">More ▾</button>
         <div class="menu-list" id="moreMenu" hidden>
@@ -94,6 +95,7 @@
         <label>Class<input name="cls" list="dlClass"></label>
         <label>Specialist<select name="specialist" id="specialistSelect"></select></label>
         <label>Remarks<input name="remarks"></label>
+        <label>Discord User ID<input name="discordId" inputmode="numeric" placeholder="e.g. 123456789012345678"></label>
         <label class="check"><input type="checkbox" name="exempt"> Exempt (no quota / N/A)</label>
         <label class="check"><input type="checkbox" name="kiv"> KIV (keep in view)</label>
       </div>
@@ -105,6 +107,30 @@
         <span class="spacer"></span>
         <button value="cancel" class="btn" formnovalidate>Cancel</button>
         <button value="ok" class="btn primary">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <datalist id="dlClassAll"></datalist>
+
+  <dialog id="discordDlg">
+    <form id="discordForm" onsubmit="return false">
+      <h2>Tag pending members on Discord</h2>
+      <div class="grid one">
+        <label>Discord webhook URL
+          <input name="webhook" type="url" placeholder="https://discord.com/api/webhooks/…" autocomplete="off">
+        </label>
+        <p class="small">Discord: Server Settings → Integrations → Webhooks → New Webhook → pick the channel → Copy Webhook URL.</p>
+        <p id="discordMissing" class="note" hidden></p>
+        <label>Message preview
+          <textarea id="discordPreview" rows="10" readonly></textarea>
+        </label>
+      </div>
+      <p id="discordStatus" class="small"></p>
+      <div class="actions">
+        <span class="spacer"></span>
+        <button type="button" class="btn" id="discordCancelBtn">Cancel</button>
+        <button type="button" class="btn discord" id="discordSendBtn">Send to Discord</button>
       </div>
     </form>
   </dialog>
