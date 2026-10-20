@@ -527,6 +527,7 @@
 
   function openDiscord() {
     const f = $('#discordForm');
+    if (discordDlg.open) discordDlg.close();
     const st = settings();
     f.webhook.value = st.webhook;
     f.title.value = st.title;
@@ -602,6 +603,28 @@
       btn.disabled = false;
     }
   }
+
+  // Bulk entry of Discord User IDs / names, so tags really ping.
+  const idsDlg = $('#idsDlg');
+  function openIds() {
+    $('#idsRows').innerHTML = state.members.map(m => `<tr>
+        <td class="name">${esc(m.name)}</td>
+        <td><input data-ids="${m.id}" data-k="discordName" value="${esc(m.discordName || '')}" placeholder="${esc(settings().prefix + m.name)}"></td>
+        <td><input data-ids="${m.id}" data-k="discordId" value="${esc(m.discordId || '')}" inputmode="numeric" placeholder="123456789012345678"></td>
+      </tr>`).join('');
+    idsDlg.showModal();
+  }
+  idsDlg.addEventListener('close', () => {
+    if (idsDlg.returnValue !== 'ok') return;
+    document.querySelectorAll('#idsRows input').forEach(el => {
+      const m = state.members.find(x => x.id === el.dataset.ids);
+      if (!m) return;
+      m[el.dataset.k] = el.dataset.k === 'discordId' ? el.value.replace(/\D/g, '') : el.value.trim();
+    });
+    save();
+    if (discordDlg.open) openDiscord(); else render();
+  });
+  $('#idsBtn').addEventListener('click', openIds);
 
   $('#discordBtn').addEventListener('click', openDiscord);
   $('#discordCopyBtn').addEventListener('click', copyDiscord);

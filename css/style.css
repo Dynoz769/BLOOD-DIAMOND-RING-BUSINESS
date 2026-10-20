@@ -232,3 +232,9 @@ dialog h2 { margin: 0 0 12px; font-size: 18px; }
   .table-wrap { border: 0; overflow: visible; }
 }
 #discordDlg { width: min(760px, calc(100vw - 32px)); }
+#idsDlg { width: min(760px, calc(100vw - 32px)); }
+.ids-wrap { max-height: 55vh; overflow: auto; border: 1px solid var(--line); border-radius: 6px; }
+table.ids { min-width: 0; }
+table.ids th { cursor: default; }
+table.ids td { text-align: left; }
+table.ids input { width: 100%; }

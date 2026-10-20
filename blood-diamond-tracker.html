@@ -239,6 +239,12 @@ dialog h2 { margin: 0 0 12px; font-size: 18px; }
   .table-wrap { border: 0; overflow: visible; }
 }
 #discordDlg { width: min(760px, calc(100vw - 32px)); }
+#idsDlg { width: min(760px, calc(100vw - 32px)); }
+.ids-wrap { max-height: 55vh; overflow: auto; border: 1px solid var(--line); border-radius: 6px; }
+table.ids { min-width: 0; }
+table.ids th { cursor: default; }
+table.ids td { text-align: left; }
+table.ids input { width: 100%; }
 </style>
 </head>
 <body>
@@ -365,6 +371,7 @@ dialog h2 { margin: 0 0 12px; font-size: 18px; }
         </label>
         <p class="hint span2">To really ping a role, use &lt;@&amp;RoleID&gt; (right-click the role → Copy Role ID). Each member's own Discord name can be set via Edit → Discord name.</p>
         <p id="discordMissing" class="note span2" hidden></p>
+        <p class="span2"><button type="button" class="btn" id="idsBtn">Set Discord IDs (so tags really ping)</button></p>
         <label class="span2">Message (you can still edit it here before copying)
           <textarea id="discordPreview" rows="14"></textarea>
         </label>
@@ -382,6 +389,24 @@ dialog h2 { margin: 0 0 12px; font-size: 18px; }
         <span class="spacer"></span>
         <button type="button" class="btn" id="discordCancelBtn">Close</button>
         <button type="button" class="btn discord" id="discordCopyBtn">Copy message</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="idsDlg">
+    <form method="dialog">
+      <h2>Discord IDs</h2>
+      <p class="small">Discord → Settings → Advanced → turn on <b>Developer Mode</b>. Then right-click a member → <b>Copy User ID</b> and paste it here. With an ID the message uses &lt;@ID&gt;, which becomes a real tag when you send it.</p>
+      <div class="ids-wrap">
+        <table class="ids">
+          <thead><tr><th>Name</th><th>Discord name</th><th>Discord User ID</th></tr></thead>
+          <tbody id="idsRows"></tbody>
+        </table>
+      </div>
+      <div class="actions">
+        <span class="spacer"></span>
+        <button value="cancel" class="btn" formnovalidate>Cancel</button>
+        <button value="ok" class="btn primary">Save</button>
       </div>
     </form>
   </dialog>
@@ -947,6 +972,7 @@ dialog h2 { margin: 0 0 12px; font-size: 18px; }
 
   function openDiscord() {
     const f = $('#discordForm');
+    if (discordDlg.open) discordDlg.close();
     const st = settings();
     f.webhook.value = st.webhook;
     f.title.value = st.title;
@@ -1022,6 +1048,28 @@ dialog h2 { margin: 0 0 12px; font-size: 18px; }
       btn.disabled = false;
     }
   }
+
+  // Bulk entry of Discord User IDs / names, so tags really ping.
+  const idsDlg = $('#idsDlg');
+  function openIds() {
+    $('#idsRows').innerHTML = state.members.map(m => `<tr>
+        <td class="name">${esc(m.name)}</td>
+        <td><input data-ids="${m.id}" data-k="discordName" value="${esc(m.discordName || '')}" placeholder="${esc(settings().prefix + m.name)}"></td>
+        <td><input data-ids="${m.id}" data-k="discordId" value="${esc(m.discordId || '')}" inputmode="numeric" placeholder="123456789012345678"></td>
+      </tr>`).join('');
+    idsDlg.showModal();
+  }
+  idsDlg.addEventListener('close', () => {
+    if (idsDlg.returnValue !== 'ok') return;
+    document.querySelectorAll('#idsRows input').forEach(el => {
+      const m = state.members.find(x => x.id === el.dataset.ids);
+      if (!m) return;
+      m[el.dataset.k] = el.dataset.k === 'discordId' ? el.value.replace(/\D/g, '') : el.value.trim();
+    });
+    save();
+    if (discordDlg.open) openDiscord(); else render();
+  });
+  $('#idsBtn').addEventListener('click', openIds);
 
   $('#discordBtn').addEventListener('click', openDiscord);
   $('#discordCopyBtn').addEventListener('click', copyDiscord);

@@ -31,6 +31,7 @@ A browser-based version of the weekly submission sheet. No install and no server
   - Names are written as **"HK | " + name** (prefix can be changed). If someone's Discord name is different, set it via *Edit → Discord name* (e.g. `HK | JIN MORI ( MONKEY KING )`); the names from the WK43 reminder are already filled in.
   - Pick Day1 / Day2 / Day3 - Final Day (today's day is chosen automatically). The title and the "Dear" tags can be changed, and you can still edit the text before copying.
   - To make a tag really ping, add the member's **Discord User ID** via *Edit* (Discord *Settings → Advanced → Developer Mode*, then right-click the user → *Copy User ID*). The message then contains `<@ID>`, which Discord turns into a mention when you send it. For roles, put `<@&RoleID>` in the "Dear" tags. Without an ID the name is written as plain text and does not ping.
+  - **Set Discord IDs** (inside the Discord reminder) lists every member so all IDs and Discord names can be filled in at once. Pasted plain text like `@HK | Ryouta` does **not** ping in Discord; only `<@ID>` does.
   - Optional: paste a channel webhook URL to send it straight from the app. Only the users/roles in the message are pinged, never @everyone or @here.
 - **History**: pick any past week from the Week dropdown to view it (read-only).
 - Search, filters (family, specialist, status), and sorting by clicking a column header.

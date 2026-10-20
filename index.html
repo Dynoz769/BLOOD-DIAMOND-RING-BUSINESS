@@ -130,6 +130,7 @@
         </label>
         <p class="hint span2">To really ping a role, use &lt;@&amp;RoleID&gt; (right-click the role → Copy Role ID). Each member's own Discord name can be set via Edit → Discord name.</p>
         <p id="discordMissing" class="note span2" hidden></p>
+        <p class="span2"><button type="button" class="btn" id="idsBtn">Set Discord IDs (so tags really ping)</button></p>
         <label class="span2">Message (you can still edit it here before copying)
           <textarea id="discordPreview" rows="14"></textarea>
         </label>
@@ -147,6 +148,24 @@
         <span class="spacer"></span>
         <button type="button" class="btn" id="discordCancelBtn">Close</button>
         <button type="button" class="btn discord" id="discordCopyBtn">Copy message</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="idsDlg">
+    <form method="dialog">
+      <h2>Discord IDs</h2>
+      <p class="small">Discord → Settings → Advanced → turn on <b>Developer Mode</b>. Then right-click a member → <b>Copy User ID</b> and paste it here. With an ID the message uses &lt;@ID&gt;, which becomes a real tag when you send it.</p>
+      <div class="ids-wrap">
+        <table class="ids">
+          <thead><tr><th>Name</th><th>Discord name</th><th>Discord User ID</th></tr></thead>
+          <tbody id="idsRows"></tbody>
+        </table>
+      </div>
+      <div class="actions">
+        <span class="spacer"></span>
+        <button value="cancel" class="btn" formnovalidate>Cancel</button>
+        <button value="ok" class="btn primary">Save</button>
       </div>
     </form>
   </dialog>
