@@ -2,8 +2,12 @@
  * Leave as null to keep data only in this browser.
  * To go online, paste the config from Firebase console →
  * Project settings → General → Your apps → Web app → "SDK setup and configuration" → Config.
- * (These values are not secret; access is protected by login + database.rules.json.) */
+ * (These values are not secret.) */
 window.BDRB_FIREBASE_CONFIG = null;
+
+/* false: no login, anyone who opens the page can view and edit (use database.rules.json).
+ * true:  admins sign in with email/password (use database.rules.login.json). */
+window.BDRB_REQUIRE_LOGIN = false;
 
 /* Example:
 window.BDRB_FIREBASE_CONFIG = {

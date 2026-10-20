@@ -1,7 +1,7 @@
 /* Blood Diamond Ring Business – weekly submission tracker.
  * Data is kept in the browser (localStorage). When js/firebase-config.js holds a
- * Firebase config, admins sign in and the data is shared live through the
- * Firebase Realtime Database instead. */
+ * Firebase config, the data is shared live through the Firebase Realtime Database
+ * instead (optionally behind an admin login). */
 (function () {
   'use strict';
 
@@ -689,10 +689,11 @@
 
 
   // ---------- Cloud database (Firebase) ----------
-  // The whole state lives at /bdrb/state. Only UIDs listed under /admins may read or
-  // write it (see database.rules.json). Last write wins, which is fine for a few admins.
+  // The whole state lives at /bdrb/state. Last write wins, which is fine for a few admins.
+  // Without login (default) anyone who opens the page can edit, so database.rules.json is
+  // open; with BDRB_REQUIRE_LOGIN only UIDs listed under /admins may read or write.
   const CLOUD_PATH = 'bdrb/state';
-  const cloud = { ref: null, user: null, lastJson: '' };
+  const cloud = { ref: null, label: '', lastJson: '' };
   const loginDlg = $('#loginDlg');
 
   function setCloudStatus(text, kind) {
@@ -714,14 +715,44 @@
   }
 
   function cloudPush() {
-    if (!cloud.ref || !cloud.user) return;
+    if (!cloud.ref) return;
     const json = JSON.stringify(state);
     if (json === cloud.lastJson) return;
     cloud.lastJson = json;
     setCloudStatus('● Saving…', 'busy');
     cloud.ref.set(JSON.parse(json))
-      .then(() => setCloudStatus(`● Online – ${cloud.user.email}`, 'ok'))
+      .then(() => setCloudStatus(`● Online${cloud.label}`, 'ok'))
       .catch(err => setCloudStatus('● Not saved: ' + err.message, 'bad'));
+  }
+
+  // Listens to the shared state; nothing is pushed until the first snapshot has arrived,
+  // so a browser with old local data never overwrites the database on open.
+  function subscribe(ref, label, onDenied) {
+    cloud.label = label;
+    setCloudStatus('● Connecting…', 'busy');
+    ref.on('value', snap => {
+      cloud.ref = ref;
+      const v = snap.val();
+      if (!v) {                      // empty database: upload what this browser has
+        cloud.lastJson = '';
+        cloudPush();
+        return;
+      }
+      const incoming = fromCloud(v);
+      const json = JSON.stringify(incoming);
+      setCloudStatus(`● Online${label}`, 'ok');
+      if (json === cloud.lastJson) return;   // our own write coming back
+      cloud.lastJson = json;
+      state = incoming;
+      try { localStorage.setItem(STORAGE_KEY, json); } catch (e) { /* cache only */ }
+      const weeks = [state.week, ...state.history.map(h => h.week)];
+      if (!weeks.includes(viewWeek)) viewWeek = state.week;
+      render();
+    }, err => {
+      cloud.ref = null;
+      setCloudStatus('● No access', 'bad');
+      if (onDenied) onDenied(err);
+    });
   }
 
   function startCloud() {
@@ -729,6 +760,12 @@
     if (!config || !window.firebase) return false;
     firebase.initializeApp(config);
     const ref = firebase.database().ref(CLOUD_PATH);
+
+    if (!window.BDRB_REQUIRE_LOGIN) {
+      subscribe(ref, '', err => alert('Could not open the database: ' + err.message));
+      return true;
+    }
+
     $('#logoutBtn').hidden = false;
     $('#logoutBtn').addEventListener('click', () => firebase.auth().signOut());
     loginDlg.addEventListener('cancel', e => e.preventDefault());   // no closing with Esc
@@ -744,38 +781,16 @@
     });
 
     firebase.auth().onAuthStateChanged(user => {
-      if (cloud.ref) cloud.ref.off();
+      ref.off();
       cloud.ref = null;
-      cloud.user = user;
       if (!user) {
         setCloudStatus('● Signed out', 'bad');
         if (!loginDlg.open) loginDlg.showModal();
         return;
       }
       if (loginDlg.open) loginDlg.close();
-      setCloudStatus('● Connecting…', 'busy');
-      ref.on('value', snap => {
-        cloud.ref = ref;
-        const v = snap.val();
-        if (!v) {                      // empty database: upload what this browser has
-          cloud.lastJson = '';
-          cloudPush();
-          return;
-        }
-        const incoming = fromCloud(v);
-        const json = JSON.stringify(incoming);
-        setCloudStatus(`● Online – ${user.email}`, 'ok');
-        if (json === cloud.lastJson) return;   // our own write coming back
-        cloud.lastJson = json;
-        state = incoming;
-        try { localStorage.setItem(STORAGE_KEY, json); } catch (e) { /* cache only */ }
-        const weeks = [state.week, ...state.history.map(h => h.week)];
-        if (!weeks.includes(viewWeek)) viewWeek = state.week;
-        render();
-      }, err => {
-        setCloudStatus('● No access', 'bad');
-        alert(`This account is not an admin yet.\n\nAsk the owner to add this UID under "admins" in the Firebase Realtime Database:\n\n${user.uid}`);
-      });
+      subscribe(ref, ` – ${user.email}`, () =>
+        alert(`This account is not an admin yet.\n\nAsk the owner to add this UID under "admins" in the Firebase Realtime Database:\n\n${user.uid}`));
     });
     return true;
   }

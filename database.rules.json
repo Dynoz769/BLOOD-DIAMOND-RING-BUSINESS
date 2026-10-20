@@ -3,8 +3,11 @@
     ".read": false,
     ".write": false,
     "bdrb": {
-      ".read": "auth != null && root.child('admins').child(auth.uid).val() === true",
-      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
+      "state": {
+        ".read": true,
+        ".write": true,
+        ".validate": "newData.hasChildren(['week', 'members']) && newData.child('week').isNumber()"
+      }
     }
   }
 }
