@@ -241,7 +241,9 @@
       let pendingCell = '-';
       if (c.pending != null) {
         const w = Math.min(100, Math.round((-c.pending / maxQuota) * 100));
-        pendingCell = `<div class="pending"><span class="val">${c.pending}</span><span class="bar">${w ? `<i style="width:${w}%"></i>` : ''}</span></div>`;
+        pendingCell = c.pending
+          ? `<div class="pending"><span class="val">${c.pending}</span><span class="bar"><i style="width:${w}%"></i></span></div>`
+          : `<span class="pending-zero">0</span>`;
       }
       const statusCls = na ? 'NA' : c.status;
       const specs = ['-', ...Object.keys(quotas)];
