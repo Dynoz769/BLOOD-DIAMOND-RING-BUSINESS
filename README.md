@@ -12,9 +12,8 @@ A browser-based version of the weekly submission sheet. No install and no server
   - Melee & Shooter = 100 pcs/week
   - Farming = 250 pcs/week
 - **Exempt** members (e.g. Oyabun/Aneki) show N/A. **KIV** members are shaded dark and left out of the pending count.
-- **Start next week**: saves the current week to history and resets the daily numbers. It also carries balances forward:
-  - Pieces above the requirement, plus Adv Submission, become **Credit B/F** for next week.
-  - A shortfall becomes **Due Submission** for next week (not for KIV or exempt members).
+- **Automatic advance**: enter what a member actually gives each day. Anything above the requirement shows as **Adv Submission** (with *Adv - WK..* in Remarks) and is automatically deducted from next week's quota; any leftover keeps rolling to the following weeks until it is used up. E.g. Ryu gives 1255 in WK43 (quota 250) → 1005 advance covers WK44, WK45, WK46 and part of WK47.
+- **Start next week**: saves the current week to history, resets the daily numbers, carries the advance forward, and turns any shortfall into **Due Submission** (not for KIV or exempt members).
 - **History**: pick any past week from the Week dropdown to view it (read-only).
 - Search, filters (family, specialist, status), and sorting by clicking a column header.
 - Export the week to **CSV** (opens in Excel), **download/restore a JSON backup**, and **print**.

@@ -14,35 +14,37 @@
   // ---------- Sample data (Week 43 sheet) ----------
   function sampleState() {
     const rows = [
-      // hierarchy, family, class, specialist, name, mon, tue, wed, adv, remarks, exempt, kiv
-      ['Oyabun', 'Nakamura', 'Kumicho', '-', 'Don Nakamura', 0, 0, 0, 0, '', true, false],
-      ['Aneki', 'Kizuna', 'Oka-San', 'Melee', 'Leia Yuki', 0, 0, 0, 0, '', true, false],
-      ['Aniki', 'Kizuna', 'Kigyo-Shatei', 'Melee', 'Ragna Silver', 0, 0, 0, 0, '', true, false],
-      ['Aniki', 'Kizuna', 'Kigyo-Shatei', 'Melee', 'Nick Leon', 0, 250, 0, 0, '', false, false],
-      ['Aniki', 'Kizuna', 'Wakagashira', 'Melee & Shooter', 'Ajol Rentaka', 0, 100, 0, 50, 'Adv - WK44', false, false],
-      ['Aniki', 'Kizuna', 'Jun-Kouseiin', 'Melee', 'Ezzy Tezu', 250, 0, 0, 250, 'Adv - WK44', false, false],
-      ['Onee-San', 'Kurogawa', 'Kage', 'Melee', 'Reyna Kurogawa', 0, 250, 0, 16, 'Adv - WK44', false, false],
-      ['Kyoudai', 'Kurogawa', 'Kage', 'Melee', 'Ryouta Kurogawa', 0, 0, 0, 0, '', false, false],
-      ['Kyoudai', 'Kurogawa', 'Kage', 'Farming', 'Takeru Kurogawa', 0, 0, 0, 0, '', false, false],
-      ['Kyoudai', 'Akuma', 'Wakagashira', 'Melee & Shooter', 'Mikey Ryou', 0, 100, 0, 88, '', false, false],
-      ['Kyoudai', 'Akuma', 'Wakashu', 'Melee & Shooter', 'Jin Mori', 0, 0, 0, 0, '', false, false],
-      ['Kyoudai', 'Akuma', 'Wakashu', 'Melee & Shooter', 'Joe Apollo', 0, 0, 0, 0, '', false, false],
-      ['Kyoudai', 'Akuma', 'Wakashu', 'Melee & Shooter', 'Kaizer DMC', 100, 0, 0, 200, 'Adv - WK45', false, false],
-      ['Kyoudai', 'Akuma', 'Wakashu', 'Melee & Shooter', 'Shin Nightingale', 0, 0, 0, 0, '', false, false],
-      ['Kyoudai', 'Arakawa', 'Kage', 'Shooter', 'Ash Lee Astrid ARK', 0, 0, 0, 0, '', false, false],
-      ['Kyoudai', 'Arakawa', 'Kage', 'Shooter', 'Ayra Astrid ARK', 0, 0, 0, 0, '', false, false],
-      ['Kyoudai', 'Arakawa', 'Kage', 'Shooter', 'Supreme Toman Astrid ARK', 0, 0, 0, 0, '', false, false],
-      ['Kyoudai', 'Kizuna', 'Kage', 'Farming', 'Dahlia Yasmin', 0, 0, 0, 0, 'KIV', false, true],
-      ['Kyoudai', 'Kizuna', 'Kage', 'Shooter', 'El Tiger', 0, 0, 0, 0, '', false, false],
-      ['Kyoudai', 'Kizuna', 'Kage', 'Farming', 'Gashima', 0, 0, 0, 0, 'KIV', false, true],
-      ['Kyoudai', 'Kizuna', 'Kage', 'Melee', 'Kisaragi Rize', 0, 0, 0, 0, '', false, false],
-      ['Kyoudai', 'Kizuna', 'Kage', 'Farming', 'Malik Nuh', 0, 250, 0, 19, 'Adv - WK44', false, false],
-      ['Kyoudai', 'Kizuna', 'Kage', 'Shooter', 'Rafiq Azlan', 0, 150, 0, 100, 'Adv - WK44', false, false],
-      ['Kyoudai', 'Kizuna', 'Kage', 'Farming', 'Ryu Yukimura', 0, 250, 0, 1005, 'Adv - WK47', false, false],
-      ['Kyoudai', 'Kizuna', 'Wakashu', 'Melee & Shooter', 'Tizzy Goh Anran', 0, 100, 0, 51, 'Adv - WK44', false, false],
-      ['Kyoudai', 'Shinigami', 'Kage', 'Shooter', 'Lao D. Shinigami', 0, 150, 0, 1, 'Adv - WK44', false, false],
+      // hierarchy, family, class, specialist, name, mon, tue, wed, remarks, exempt, kiv
+      // Daily figures include any extra given (e.g. Ryu gave 1255 = 250 quota + 1005 advance).
+      ['Oyabun', 'Nakamura', 'Kumicho', '-', 'Don Nakamura', 0, 0, 0, '', true, false],
+      ['Aneki', 'Kizuna', 'Oka-San', 'Melee', 'Leia Yuki', 0, 0, 0, '', true, false],
+      ['Aniki', 'Kizuna', 'Kigyo-Shatei', 'Melee', 'Ragna Silver', 0, 0, 0, '', true, false],
+      ['Aniki', 'Kizuna', 'Kigyo-Shatei', 'Melee', 'Nick Leon', 0, 250, 0, '', false, false],
+      ['Aniki', 'Kizuna', 'Wakagashira', 'Melee & Shooter', 'Ajol Rentaka', 0, 150, 0, '', false, false],
+      ['Aniki', 'Kizuna', 'Jun-Kouseiin', 'Melee', 'Ezzy Tezu', 500, 0, 0, '', false, false],
+      ['Onee-San', 'Kurogawa', 'Kage', 'Melee', 'Reyna Kurogawa', 0, 266, 0, '', false, false],
+      ['Kyoudai', 'Kurogawa', 'Kage', 'Melee', 'Ryouta Kurogawa', 0, 0, 0, '', false, false],
+      ['Kyoudai', 'Kurogawa', 'Kage', 'Farming', 'Takeru Kurogawa', 0, 0, 0, '', false, false],
+      ['Kyoudai', 'Akuma', 'Wakagashira', 'Melee & Shooter', 'Mikey Ryou', 0, 188, 0, '', false, false],
+      ['Kyoudai', 'Akuma', 'Wakashu', 'Melee & Shooter', 'Jin Mori', 0, 0, 0, '', false, false],
+      ['Kyoudai', 'Akuma', 'Wakashu', 'Melee & Shooter', 'Joe Apollo', 0, 0, 0, '', false, false],
+      ['Kyoudai', 'Akuma', 'Wakashu', 'Melee & Shooter', 'Kaizer DMC', 300, 0, 0, '', false, false],
+      ['Kyoudai', 'Akuma', 'Wakashu', 'Melee & Shooter', 'Shin Nightingale', 0, 0, 0, '', false, false],
+      ['Kyoudai', 'Arakawa', 'Kage', 'Shooter', 'Ash Lee Astrid ARK', 0, 0, 0, '', false, false],
+      ['Kyoudai', 'Arakawa', 'Kage', 'Shooter', 'Ayra Astrid ARK', 0, 0, 0, '', false, false],
+      ['Kyoudai', 'Arakawa', 'Kage', 'Shooter', 'Supreme Toman Astrid ARK', 0, 0, 0, '', false, false],
+      ['Kyoudai', 'Kizuna', 'Kage', 'Farming', 'Dahlia Yasmin', 0, 0, 0, 'KIV', false, true],
+      ['Kyoudai', 'Kizuna', 'Kage', 'Shooter', 'El Tiger', 0, 0, 0, '', false, false],
+      ['Kyoudai', 'Kizuna', 'Kage', 'Farming', 'Gashima', 0, 0, 0, 'KIV', false, true],
+      ['Kyoudai', 'Kizuna', 'Kage', 'Melee', 'Kisaragi Rize', 0, 0, 0, '', false, false],
+      ['Kyoudai', 'Kizuna', 'Kage', 'Farming', 'Malik Nuh', 0, 269, 0, '', false, false],
+      ['Kyoudai', 'Kizuna', 'Kage', 'Shooter', 'Rafiq Azlan', 0, 250, 0, '', false, false],
+      ['Kyoudai', 'Kizuna', 'Kage', 'Farming', 'Ryu Yukimura', 0, 1255, 0, '', false, false],
+      ['Kyoudai', 'Kizuna', 'Wakashu', 'Melee & Shooter', 'Tizzy Goh Anran', 0, 151, 0, '', false, false],
+      ['Kyoudai', 'Shinigami', 'Kage', 'Shooter', 'Lao D. Shinigami', 0, 151, 0, '', false, false],
     ];
     return {
+      version: 2,
       week: 43,
       quotas: { 'Shooter': 150, 'Melee': 250, 'Melee & Shooter': 100, 'Farming': 250 },
       members: rows.map((r, i) => ({
@@ -50,7 +52,7 @@
         order: i,
         hierarchy: r[0], family: r[1], cls: r[2], specialist: r[3], name: r[4],
         days: { mon: r[5], tue: r[6], wed: r[7] },
-        adv: r[8], credit: 0, due: 0, remarks: r[9], exempt: r[10], kiv: r[11],
+        carry: 0, due: 0, remarks: r[8], exempt: r[9], kiv: r[10],
       })),
       history: [],
     };
@@ -69,9 +71,22 @@
   function load() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) return JSON.parse(raw);
+      if (raw) return migrate(JSON.parse(raw));
     } catch (e) { /* fall through to sample */ }
     return sampleState();
+  }
+  // v1 had a manual Adv Submission and a separate Credit B/F; both become carry-forward.
+  function migrate(s) {
+    if (s.version === 2) return s;
+    const fix = m => {
+      if (m.carry == null) m.carry = (Number(m.credit) || 0) + (Number(m.adv) || 0);
+      delete m.credit; delete m.adv;
+      if (/^Adv\b/i.test(m.remarks || '')) m.remarks = '';
+    };
+    s.members.forEach(fix);
+    (s.history || []).forEach(h => h.members.forEach(fix));
+    s.version = 2;
+    return s;
   }
   function save() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
@@ -91,19 +106,27 @@
   }
 
   // ---------- Calculations ----------
-  function calc(m, quotas) {
-    const total = DAYS.reduce((s, d) => s + (Number(m.days[d.key]) || 0), 0);
+  // given  = pcs handed in this week (Mon–Wed)
+  // carry  = extra from earlier weeks, used automatically before this week's pcs
+  // total  = what counts for this week (capped at the requirement)
+  // adv    = anything above the requirement; pushed to next week on rollover
+  function calc(m, quotas, week) {
+    const given = DAYS.reduce((s, d) => s + (Number(m.days[d.key]) || 0), 0);
+    const carry = Number(m.carry) || 0;
     const quota = quotas[m.specialist];
     if (m.exempt || quota == null) {
-      return { total, quota: null, required: 0, status: 'N/A', pending: null, leftover: total + (m.credit || 0) + (m.adv || 0) };
+      return { given, carry: 0, total: given, quota: null, required: 0, status: 'N/A', pending: null, adv: 0, advWeek: null };
     }
     const required = quota + (Number(m.due) || 0);
-    const covered = total + (Number(m.credit) || 0);
-    const status = covered >= required ? 'Completed' : 'Pending';
+    const available = given + carry;
+    const adv = Math.max(0, available - required);
     return {
-      total, quota, required, status,
-      pending: Math.min(0, covered - required),
-      leftover: Math.max(0, covered - required) + (Number(m.adv) || 0),
+      given, carry, quota, required, adv,
+      total: Math.min(available, required),
+      status: available >= required ? 'Completed' : 'Pending',
+      pending: Math.min(0, available - required),
+      // last week the advance reaches into (a partial week still counts)
+      advWeek: adv > 0 && quota > 0 ? week + Math.max(1, Math.floor(adv / quota)) : null,
     };
   }
 
@@ -149,7 +172,7 @@
     const spec = $('#filterSpecialist').value;
     const st = $('#filterStatus').value;
     const quotas = viewedQuotas();
-    let list = viewedMembers().map(m => ({ m, c: calc(m, quotas) }));
+    let list = viewedMembers().map(m => ({ m, c: calc(m, quotas, viewWeek) }));
     list = list.filter(({ m, c }) => {
       if (q && !m.name.toLowerCase().includes(q)) return false;
       if (fam && m.family !== fam) return false;
@@ -198,23 +221,22 @@
         <td>${esc(m.specialist)}</td>
         <td class="name" title="${c.quota != null ? `Quota ${c.quota}/week` : 'No quota'}">${esc(m.name)}</td>
         ${dayCells}
-        <td><b>${na && !c.total ? '-' : c.total}</b></td>
+        <td title="${c.carry ? `Includes ${Math.min(c.carry, c.required)} pcs from earlier advance` : ''}"><b>${na && !c.total ? '-' : c.total}</b>${c.carry ? ` <small class="from-adv">(adv ${Math.min(c.carry, c.required)})</small>` : ''}</td>
         <td><span class="status ${statusCls}">${c.status}</span></td>
         <td>${pendingCell}</td>
-        <td>${m.credit ? m.credit : ''}</td>
-        <td>${numInput(m.id, 'adv', m.adv, !editable)}</td>
+        <td>${c.adv || ''}</td>
         <td>${na ? '' : numInput(m.id, 'due', m.due, !editable)}</td>
-        <td><input class="txt" data-id="${m.id}" data-field="remarks" value="${esc(m.remarks)}" ${editable ? '' : 'disabled'}></td>
+        <td><div class="remarks">${c.advWeek ? `<span class="adv-tag">Adv - WK${c.advWeek}</span>` : ''}<input class="txt" data-id="${m.id}" data-field="remarks" value="${esc(m.remarks)}" ${editable ? '' : 'disabled'}></div></td>
         <td class="noprint">${editable ? `<button class="btn small" data-edit="${m.id}">Edit</button>` : ''}</td>
       </tr>`;
     }).join('');
-    $('#rows').innerHTML = rowsHtml || `<tr><td colspan="17" style="padding:20px;color:var(--muted)">No members match.</td></tr>`;
+    $('#rows').innerHTML = rowsHtml || `<tr><td colspan="16" style="padding:20px;color:var(--muted)">No members match.</td></tr>`;
 
     // Totals (over the filtered list, like the sheet's filtered total)
     const sum = f => list.reduce((s, x) => s + f(x), 0);
     const dayTotals = DAYS.map(d => sum(({ m }) => Number(m.days[d.key]) || 0));
     const total = sum(({ c }) => c.total);
-    const adv = sum(({ m }) => Number(m.adv) || 0);
+    const adv = sum(({ c }) => c.adv);
     const pend = sum(({ c }) => c.pending || 0);
     $('#foot').innerHTML = `
       <tr>
@@ -223,13 +245,12 @@
         <td>${total}</td>
         <td></td>
         <td style="color:var(--warn)">${pend}</td>
-        <td></td>
         <td>${adv}</td>
         <td colspan="1" style="text-align:right">Sub Total</td>
         <td>${total + adv}</td>
         <td class="noprint"></td>
       </tr>
-      <tr class="week"><td colspan="17">Week ${viewWeek}</td></tr>`;
+      <tr class="week"><td colspan="16">Week ${viewWeek}</td></tr>`;
 
     // Sort indicator
     document.querySelectorAll('#sheet thead th').forEach(th => {
@@ -237,7 +258,7 @@
       th.classList.toggle('desc', th.dataset.sort === sort.key && sort.desc);
     });
 
-    renderStats(viewedMembers().map(m => calc(m, viewedQuotas())), viewedMembers());
+    renderStats(viewedMembers().map(m => calc(m, viewedQuotas(), viewWeek)), viewedMembers());
   }
 
   function renderStats(calcs, members) {
@@ -245,7 +266,8 @@
     const done = active.filter(c => c.status === 'Completed').length;
     const pending = active.length - done;
     const total = calcs.reduce((s, c) => s + c.total, 0);
-    const adv = members.reduce((s, m) => s + (Number(m.adv) || 0), 0);
+    const given = calcs.reduce((s, c) => s + c.given, 0);
+    const adv = calcs.reduce((s, c) => s + c.adv, 0);
     const short = active.reduce((s, c) => s + (c.pending || 0), 0);
     const target = active.reduce((s, c) => s + c.required, 0);
     const pct = active.length ? Math.round((done / active.length) * 100) : 0;
@@ -258,7 +280,8 @@
       <div class="stat"><div class="k">KIV</div><div class="v">${kiv}</div></div>
       <div class="stat"><div class="k">Total submitted / target</div><div class="v">${total} <small style="font-size:13px;color:var(--muted)">/ ${target}</small></div></div>
       <div class="stat bad"><div class="k">Outstanding pcs</div><div class="v">${short}</div></div>
-      <div class="stat"><div class="k">Sub total (incl. advance)</div><div class="v">${total + adv}</div></div>`;
+      <div class="stat"><div class="k">Pcs given this week</div><div class="v">${given}</div></div>
+      <div class="stat"><div class="k">Advance to next week</div><div class="v">${adv}</div></div>`;
   }
 
   function renderLegend() {
@@ -268,7 +291,7 @@
   }
 
   // ---------- Header sorting ----------
-  const sortKeys = ['order', 'hierarchy', 'family', 'cls', 'specialist', 'name', 'mon', 'tue', 'wed', 'total', 'status', 'pending', 'credit', 'adv', 'due', 'remarks', ''];
+  const sortKeys = ['order', 'hierarchy', 'family', 'cls', 'specialist', 'name', 'mon', 'tue', 'wed', 'total', 'status', 'pending', 'adv', 'due', 'remarks', ''];
   document.querySelectorAll('#sheet thead th').forEach((th, i) => {
     th.dataset.sort = sortKeys[i];
     if (!sortKeys[i]) return;
@@ -344,7 +367,7 @@
     if (editingId) Object.assign(state.members.find(x => x.id === editingId), data);
     else state.members.push({
       id: uid(), order: Math.max(-1, ...state.members.map(x => x.order)) + 1,
-      days: Object.fromEntries(DAYS.map(d => [d.key, 0])), adv: 0, credit: 0, due: 0, ...data,
+      days: Object.fromEntries(DAYS.map(d => [d.key, 0])), carry: 0, due: 0, ...data,
     });
     save(); render();
   });
@@ -396,13 +419,11 @@
     state.history = state.history.filter(h => h.week !== state.week);
     state.history.push({ week: state.week, quotas: { ...state.quotas }, members: JSON.parse(JSON.stringify(state.members)) });
     state.members.forEach(m => {
-      const c = calc(m, state.quotas);
+      const c = calc(m, state.quotas, state.week);
       const carryDue = c.status === 'Pending' && !m.kiv ? -c.pending : 0;
-      m.credit = c.status === 'N/A' ? 0 : c.leftover;
+      m.carry = c.adv;
       m.due = carryDue;
-      m.adv = 0;
       DAYS.forEach(d => { m.days[d.key] = 0; });
-      if (/^Adv\b/i.test(m.remarks || '')) m.remarks = '';
     });
     state.week += 1;
     viewWeek = state.week;
@@ -429,7 +450,7 @@
     try {
       const data = JSON.parse(await file.text());
       if (!Array.isArray(data.members) || typeof data.week !== 'number') throw new Error('Not a valid backup file');
-      state = { history: [], quotas: {}, ...data };
+      state = migrate({ history: [], quotas: {}, ...data });
       viewWeek = state.week;
       save(); render();
     } catch (err) { alert('Restore failed: ' + err.message); }
@@ -439,12 +460,13 @@
   function exportCsv() {
     const quotas = viewedQuotas();
     const head = ['No', 'Hierarchy', 'Family', 'Class', 'Specialist', 'Namelist', ...DAYS.map(d => d.label),
-      'Total submission', 'Status', 'Pending Qty', 'Credit B/F', 'Adv Submission', 'Due Submission', 'Remarks', 'KIV'];
+      'Total submission', 'Status', 'Pending Qty', 'Adv Submission', 'Due Submission', 'Remarks', 'KIV'];
     const q = v => `"${String(v == null ? '' : v).replace(/"/g, '""')}"`;
     const lines = [head.map(q).join(',')];
     filtered().forEach(({ m, c }, i) => {
       lines.push([i + 1, m.hierarchy, m.family, m.cls, m.specialist, m.name, ...DAYS.map(d => m.days[d.key]),
-        c.total, c.status, c.pending == null ? '-' : c.pending, m.credit, m.adv, m.due, m.remarks, m.kiv ? 'Yes' : '']
+        c.total, c.status, c.pending == null ? '-' : c.pending, c.adv, m.due,
+        [c.advWeek ? `Adv - WK${c.advWeek}` : '', m.remarks].filter(Boolean).join('; '), m.kiv ? 'Yes' : '']
         .map(q).join(','));
     });
     download(`blood-diamond-week${viewWeek}.csv`, lines.join('\r\n'), 'text/csv');
