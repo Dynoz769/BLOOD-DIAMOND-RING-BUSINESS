@@ -6,6 +6,7 @@
   'use strict';
 
   const STORAGE_KEY = 'bdrb-state-v1';
+  const UNSYNCED_KEY = 'bdrb-unsynced';   // set while this browser has changes the database hasn't got
   const CLASSES = ['Kumicho', 'Oka-San', 'Kigyo-Shatei', 'Wakagashira', 'Jun-Kouseiin', 'Kage', 'Wakashu'];
   const DISCORD_WEBHOOK_RE = /^https:\/\/(?:(?:ptb|canary)\.)?discord(?:app)?\.com\/api\/webhooks\/\d+\/[\w-]+/;
   const DISCORD_LIMIT = 1900;   // Discord allows 2000 chars per message; keep some margin
@@ -107,9 +108,17 @@
     return s;
   }
   function save() {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-    catch (e) { alert('Could not save data in this browser: ' + e.message); }
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      if (!cloud.ref) localStorage.setItem(UNSYNCED_KEY, '1');
+    } catch (e) { alert('Could not save data in this browser: ' + e.message); }
     cloudPush();
+  }
+  function setUnsynced(on) {
+    try { on ? localStorage.setItem(UNSYNCED_KEY, '1') : localStorage.removeItem(UNSYNCED_KEY); } catch (e) { /* ignore */ }
+  }
+  function hasUnsynced() {
+    try { return localStorage.getItem(UNSYNCED_KEY) === '1'; } catch (e) { return false; }
   }
 
   const isCurrent = () => viewWeek === state.week;
@@ -693,7 +702,7 @@
   // Without login (default) anyone who opens the page can edit, so database.rules.json is
   // open; with BDRB_REQUIRE_LOGIN only UIDs listed under /admins may read or write.
   const CLOUD_PATH = 'bdrb/state';
-  const cloud = { ref: null, label: '', lastJson: '' };
+  const cloud = { ref: null, label: '', lastJson: '', synced: false };
   const loginDlg = $('#loginDlg');
 
   function setCloudStatus(text, kind) {
@@ -721,8 +730,8 @@
     cloud.lastJson = json;
     setCloudStatus('● Saving…', 'busy');
     cloud.ref.set(JSON.parse(json))
-      .then(() => setCloudStatus(`● Online${cloud.label}`, 'ok'))
-      .catch(err => setCloudStatus('● Not saved: ' + err.message, 'bad'));
+      .then(() => { setUnsynced(false); setCloudStatus(`● Online${cloud.label}`, 'ok'); })
+      .catch(err => { setUnsynced(true); setCloudStatus('● Not saved: ' + err.message, 'bad'); });
   }
 
   // Listens to the shared state; nothing is pushed until the first snapshot has arrived,
@@ -741,6 +750,20 @@
       const incoming = fromCloud(v);
       const json = JSON.stringify(incoming);
       setCloudStatus(`● Online${label}`, 'ok');
+      // Changes made while this browser was not connected would be overwritten here, so ask first.
+      const firstSnapshot = !cloud.synced;
+      cloud.synced = true;
+      if (firstSnapshot && hasUnsynced() && JSON.stringify(state) !== json) {
+        const keepLocal = confirm('This browser has changes that were made while it was NOT connected to the database (for example Discord IDs).\n\n' +
+          'OK = upload this browser\'s data to the database (replaces the data there now)\n' +
+          'Cancel = throw these changes away and use the database');
+        if (keepLocal) {
+          cloud.lastJson = json;
+          cloudPush();
+          return;
+        }
+        setUnsynced(false);
+      }
       if (json === cloud.lastJson) return;   // our own write coming back
       cloud.lastJson = json;
       state = incoming;
@@ -783,6 +806,7 @@
     firebase.auth().onAuthStateChanged(user => {
       ref.off();
       cloud.ref = null;
+      cloud.synced = false;
       if (!user) {
         setCloudStatus('● Signed out', 'bad');
         if (!loginDlg.open) loginDlg.showModal();
