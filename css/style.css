@@ -207,6 +207,12 @@ dialog h2 { margin: 0 0 12px; font-size: 18px; }
 .grid.one { grid-template-columns: 1fr; }
 .grid textarea { font: 13px/1.4 ui-monospace, monospace; padding: 8px; border: 1px solid var(--line); border-radius: 6px; resize: vertical; color: var(--text); }
 .grid p { margin: 0; }
+.grid .span2 { grid-column: 1 / -1; }
+.grid .hint { font-size: 11px; }
+.grid details { font-size: 13px; display: grid; gap: 8px; }
+.grid details[open] { padding: 8px; border: 1px solid var(--line); border-radius: 6px; }
+.grid details summary { cursor: pointer; color: var(--muted); }
+.grid details label { display: flex; flex-direction: column; gap: 4px; margin: 8px 0; }
 .grid label.check { flex-direction: row; align-items: center; gap: 6px; color: var(--text); font-size: 14px; }
 .actions { display: flex; gap: 8px; margin-top: 16px; }
 .quota-list { display: grid; gap: 6px; margin-bottom: 10px; }
@@ -225,3 +231,4 @@ dialog h2 { margin: 0 0 12px; font-size: 18px; }
   td input { border: 0; background: transparent; width: auto; }
   .table-wrap { border: 0; overflow: visible; }
 }
+#discordDlg { width: min(760px, calc(100vw - 32px)); }

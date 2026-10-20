@@ -40,7 +40,7 @@
       <span class="spacer"></span>
       <button id="addBtn" class="btn primary">+ Add member</button>
       <button id="quotaBtn" class="btn">Quotas</button>
-      <button id="discordBtn" class="btn discord">Tag pending on Discord</button>
+      <button id="discordBtn" class="btn discord">Discord reminder</button>
       <div class="menu">
         <button class="btn" id="moreBtn">More ▾</button>
         <div class="menu-list" id="moreMenu" hidden>
@@ -119,22 +119,32 @@
 
   <dialog id="discordDlg">
     <form id="discordForm" onsubmit="return false">
-      <h2>Tag pending members on Discord</h2>
-      <div class="grid one">
-        <label>Discord webhook URL
-          <input name="webhook" type="url" placeholder="https://discord.com/api/webhooks/…" autocomplete="off">
+      <h2>Discord reminder – pending members</h2>
+      <div class="grid">
+        <label>Day<select name="day"></select></label>
+        <label>Title<input name="title"></label>
+        <label class="span2">"Dear" tags
+          <input name="greet" placeholder="@NAKAMA @HYOUKA">
+          <span class="hint">To really ping a role, use &lt;@&amp;RoleID&gt; (right-click the role → Copy Role ID).</span>
         </label>
-        <p class="small">Discord: Server Settings → Integrations → Webhooks → New Webhook → pick the channel → Copy Webhook URL.</p>
-        <p id="discordMissing" class="note" hidden></p>
-        <label>Message preview
-          <textarea id="discordPreview" rows="10" readonly></textarea>
+        <p id="discordMissing" class="note span2" hidden></p>
+        <label class="span2">Message (you can still edit it here before copying)
+          <textarea id="discordPreview" rows="14"></textarea>
         </label>
+        <details class="span2">
+          <summary>Optional: send automatically via webhook</summary>
+          <label>Discord webhook URL
+            <input name="webhook" type="url" placeholder="https://discord.com/api/webhooks/…" autocomplete="off">
+          </label>
+          <p class="small">Server Settings → Integrations → Webhooks → New Webhook → pick the channel → Copy Webhook URL.</p>
+          <button type="button" class="btn" id="discordSendBtn">Send via webhook</button>
+        </details>
       </div>
       <p id="discordStatus" class="small"></p>
       <div class="actions">
         <span class="spacer"></span>
-        <button type="button" class="btn" id="discordCancelBtn">Cancel</button>
-        <button type="button" class="btn discord" id="discordSendBtn">Send to Discord</button>
+        <button type="button" class="btn" id="discordCancelBtn">Close</button>
+        <button type="button" class="btn discord" id="discordCopyBtn">Copy message</button>
       </div>
     </form>
   </dialog>

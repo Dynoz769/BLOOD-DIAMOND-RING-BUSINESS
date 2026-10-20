@@ -459,8 +459,11 @@
   });
 
   // ---------- Discord ----------
+  // The message follows the family's usual reminder text. It can be copied and pasted
+  // into Discord by hand, or (optionally) posted through a webhook.
   const discordDlg = $('#discordDlg');
-  const settings = () => (state.settings = state.settings || { webhook: '' });
+  const DISCORD_DEFAULTS = { webhook: '', title: 'HOKAI FAMILY BUSINESS', greet: '@NAKAMA @HYOUKA' };
+  const settings = () => (state.settings = { ...DISCORD_DEFAULTS, ...(state.settings || {}) });
 
   function pendingMembers() {
     return viewedMembers()
@@ -468,63 +471,112 @@
       .filter(({ c }) => c.status === 'Pending');
   }
 
-  // Returns an array of message strings, each under Discord's length limit.
-  function buildDiscordMessages() {
-    const list = pendingMembers();
-    const header = `**BLOOD DIAMOND RING BUSINESS – Week ${viewWeek}**\n` +
-      (list.length ? `Reminder: ${list.length} member(s) still **PENDING** submission:` : 'All members have completed their submission. 🎉');
-    const lines = list.map(({ m, c }, i) => {
-      const who = m.discordId ? `<@${m.discordId}> (${m.name})` : `**${m.name}**`;
-      return `${i + 1}. ${who} – ${m.specialist} – short **${-c.pending}** pcs`;
-    });
-    const msgs = [];
-    let cur = header;
-    lines.forEach(l => {
-      if ((cur + '\n' + l).length > DISCORD_LIMIT) { msgs.push(cur); cur = l; }
-      else cur += '\n' + l;
-    });
-    msgs.push(cur);
-    return msgs;
+  // Day 1 = Monday … Day 3 = Wednesday (final day). Other days default to the final day.
+  function defaultDay() {
+    const d = new Date().getDay();   // 0 Sun, 1 Mon …
+    return d >= 1 && d <= DAYS.length ? d : DAYS.length;
+  }
+
+  // <@id> turns into a real mention once sent from Discord; without an ID only the name is written.
+  const mention = m => (m.discordId ? `<@${m.discordId}>` : `@${m.name}`);
+
+  function buildDiscordMessage(day) {
+    const st = settings();
+    const dayLabel = day >= DAYS.length ? `Day${day} - Final Day` : `Day${day}`;
+    const deadline = DAYS[DAYS.length - 1].label;
+    const tags = pendingMembers().map(({ m }) => mention(m)).join(' ');
+    return [
+      `⛩️ ${st.title} - WK${viewWeek} (${dayLabel}) ⛩️`,
+      '',
+      `Dear ${st.greet} ,`,
+      '',
+      `Regarding the Blood Ring submission status, please ensure your submission is completed by 11:59 PM (${deadline}) at the latest.`,
+      '',
+      "Kindly inform us if you face any difficulties nor issues or need more time completing this week's task. Any pending submissions will be carried forward to the following week.",
+      '',
+      tags || 'All submissions are completed. Thank you!',
+    ].join('\n');
+  }
+
+  function refreshDiscordPreview() {
+    const f = $('#discordForm');
+    const st = settings();
+    st.title = f.title.value.trim() || DISCORD_DEFAULTS.title;
+    st.greet = f.greet.value.trim();
+    save();
+    $('#discordPreview').value = buildDiscordMessage(Number(f.day.value));
   }
 
   function openDiscord() {
     const f = $('#discordForm');
-    f.webhook.value = settings().webhook || '';
-    const list = pendingMembers();
-    const missing = list.filter(({ m }) => !m.discordId).map(({ m }) => m.name);
+    const st = settings();
+    f.webhook.value = st.webhook;
+    f.title.value = st.title;
+    f.greet.value = st.greet;
+    f.day.innerHTML = DAYS.map((d, i) => `<option value="${i + 1}">Day${i + 1}${i === DAYS.length - 1 ? ' - Final Day' : ''} (${d.label})</option>`).join('');
+    f.day.value = String(defaultDay());
+    const missing = pendingMembers().filter(({ m }) => !m.discordId).map(({ m }) => m.name);
     $('#discordMissing').hidden = !missing.length;
     $('#discordMissing').textContent = missing.length
-      ? `No Discord ID (will not be tagged, name only): ${missing.join(', ')}. Add it via Edit → Discord User ID.` : '';
-    $('#discordPreview').value = buildDiscordMessages().join('\n\n');
+      ? `No Discord User ID yet, so these will show as plain text and NOT ping: ${missing.join(', ')}. Add it via Edit → Discord User ID.` : '';
     $('#discordStatus').textContent = '';
+    refreshDiscordPreview();
     discordDlg.showModal();
+  }
+
+  async function copyDiscord() {
+    const ta = $('#discordPreview');
+    try {
+      await navigator.clipboard.writeText(ta.value);
+    } catch (e) {
+      ta.select();
+      document.execCommand('copy');
+    }
+    $('#discordStatus').textContent = '✅ Copied! Paste it in Discord (Ctrl+V) and send.';
+  }
+
+  // Splits on line breaks so each piece stays under Discord's limit.
+  function chunk(text) {
+    const out = [];
+    let cur = '';
+    text.split('\n').forEach(line => {
+      const words = line.length > DISCORD_LIMIT ? line.split(' ') : [line];
+      words.forEach((w, i) => {
+        const sep = cur === '' ? '' : (i === 0 ? '\n' : ' ');
+        if ((cur + sep + w).length > DISCORD_LIMIT) { out.push(cur); cur = w; }
+        else cur += sep + w;
+      });
+    });
+    if (cur) out.push(cur);
+    return out;
   }
 
   async function sendDiscord() {
     const f = $('#discordForm');
     const url = f.webhook.value.trim();
     if (!DISCORD_WEBHOOK_RE.test(url)) {
-      $('#discordStatus').textContent = 'Please paste a valid Discord webhook URL.';
+      $('#discordStatus').textContent = 'Please paste a valid Discord webhook URL (or just use Copy message).';
       return;
     }
     settings().webhook = url;
     save();
-    const ids = [...new Set(pendingMembers().map(({ m }) => m.discordId).filter(Boolean))];
+    const text = $('#discordPreview').value;
+    const users = [...new Set([...text.matchAll(/<@!?(\d+)>/g)].map(x => x[1]))].slice(0, 100);
+    const roles = [...new Set([...text.matchAll(/<@&(\d+)>/g)].map(x => x[1]))].slice(0, 100);
     const btn = $('#discordSendBtn');
     btn.disabled = true;
     $('#discordStatus').textContent = 'Sending…';
     try {
-      for (const content of buildDiscordMessages()) {
+      for (const content of chunk(text)) {
         const res = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          // only ping the listed users, never @everyone/@here or roles
-          body: JSON.stringify({ content, allowed_mentions: { parse: [], users: ids.slice(0, 100) } }),
+          // only ping the users/roles written in the message, never @everyone/@here
+          body: JSON.stringify({ content, allowed_mentions: { parse: [], users, roles } }),
         });
         if (!res.ok) throw new Error(`Discord replied ${res.status} ${await res.text()}`);
       }
       $('#discordStatus').textContent = '✅ Sent to Discord.';
-      setTimeout(() => discordDlg.close(), 1200);
     } catch (err) {
       $('#discordStatus').textContent = '❌ Failed: ' + err.message;
     } finally {
@@ -533,8 +585,10 @@
   }
 
   $('#discordBtn').addEventListener('click', openDiscord);
+  $('#discordCopyBtn').addEventListener('click', copyDiscord);
   $('#discordSendBtn').addEventListener('click', sendDiscord);
   $('#discordCancelBtn').addEventListener('click', () => discordDlg.close());
+  ['title', 'greet', 'day'].forEach(n => $('#discordForm')[n].addEventListener('input', refreshDiscordPreview));
 
   // ---------- More menu ----------
   const menu = $('#moreMenu');
