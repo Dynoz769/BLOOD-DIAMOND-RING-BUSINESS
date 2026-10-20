@@ -43,7 +43,7 @@ A browser-based version of the weekly submission sheet. No install and no server
 
 **With Firebase** (shared online database): admins log in with email + password, and every change syncs live to everyone who has the page open. The top bar shows the status (● Online / Saving / Not saved).
 
-The first time you open it, the app loads the Week 43 data from the original sheet. **More → Reset to sample data** brings that data back.
+The first time you open it, the app loads the Week 43 data from the original sheet. **More → Reset to sample data** brings that data back. The same Week 43 data is also in `data/week-43.json`, which can be loaded with **More → Restore backup**.
 
 ### Firebase setup (one time, free)
 
