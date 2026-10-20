@@ -5,15 +5,35 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Blood Diamond Ring Business</title>
   <meta name="theme-color" content="#0b0a0c">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body class="intro">
+  <!-- Intro: plays on every visit; click or any key skips it (see js/splash.js) -->
+  <div id="splash" aria-hidden="true">
+    <div class="splash-stage">
+      <div class="splash-glow"></div>
+      <div class="splash-ring"></div>
+      <div class="splash-logo">
+        <img src="assets/hokai-logo.webp" alt="" width="720" height="698">
+        <span class="splash-sweep"></span>
+      </div>
+      <div class="splash-embers"></div>
+    </div>
+    <div class="splash-text">
+      <div class="splash-title">BLOOD DIAMOND RING BUSINESS</div>
+      <div class="splash-sub">HOKAI FAMILY · 崩壊</div>
+    </div>
+    <div class="splash-flash"></div>
+    <div class="splash-skip">Click to enter</div>
+  </div>
+
   <header class="topbar">
     <div class="brand">
-      <span class="gem">◆</span>
+      <img class="gem" src="assets/hokai-logo.webp" alt="HOKAI" width="52" height="50">
       <div>
         <h1>BLOOD DIAMOND RING BUSINESS</h1>
         <p class="sub">The Family Ledger · Weekly Tribute</p>
@@ -227,6 +247,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="js/splash.js"></script>
   <script src="js/firebase-config.js"></script>
   <script src="js/app.js"></script>
 </body>

@@ -4,6 +4,8 @@ A browser-based version of the weekly submission sheet. No install and no server
 
 ## Features
 
+- **Intro animation**: every visit opens with the HOKAI logo (zoom-in, impact flash and shockwave, glow, light sweep, embers, title). Click or press any key to skip; it is shortened for people who turn off animations in their system settings.
+
 - **Member sheet** with the same columns as the Excel sheet: No, Hierarchy, Family, Class, Specialist, Namelist, Mon/Tue/Wed, Total, Status, Pending Qty, Adv Submission, Due Submission, Remarks.
 - **Automatic calculation** of totals, status (Completed / Pending / N/A) and pending qty, with a red bar showing how much is still owed.
 - **Quotas per specialist** (editable under *Quotas*):
@@ -43,7 +45,7 @@ A browser-based version of the weekly submission sheet. No install and no server
 
 **With Firebase** (shared online database): every change syncs live to everyone who has the page open. The top bar shows the status (● Online / Saving / Not saved).
 
-- **No login** (default, `BDRB_REQUIRE_LOGIN = false`): anyone who opens the website can view **and edit** the data. Keep the link inside the family and download a backup regularly. The rules still refuse anything that is not a ledger, so the data cannot be wiped by deleting it.
+- **No login** (default, `BDRB_REQUIRE_LOGIN = false`): anyone who opens the website can view **and edit** the data. Keep the link inside the family and download a backup regularly. The rules refuse deletes and anything that is not a ledger (`.write` needs `newData.exists()`, because `.validate` is not checked for deletes).
 - **With login** (`BDRB_REQUIRE_LOGIN = true`): admins sign in with email + password, and only UIDs listed under `admins` can read or write.
 
 The first time you open it, the app loads the Week 43 data from the original sheet. **More → Reset to sample data** brings that data back. The same Week 43 data is also in `data/week-43.json`, which can be loaded with **More → Restore backup**.

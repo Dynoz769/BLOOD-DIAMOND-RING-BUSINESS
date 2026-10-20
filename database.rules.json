@@ -5,7 +5,7 @@
     "bdrb": {
       "state": {
         ".read": true,
-        ".write": true,
+        ".write": "newData.exists()",
         ".validate": "newData.hasChildren(['week', 'members']) && newData.child('week').isNumber()"
       }
     }
