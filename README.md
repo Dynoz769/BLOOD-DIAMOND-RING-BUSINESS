@@ -4,6 +4,8 @@ A browser-based version of the weekly submission sheet. No install and no server
 
 ## Features
 
+- **Intro animation**: every visit opens with the HOKAI logo (zoom-in, impact flash and shockwave, glow, light sweep, embers, title). Click or press any key to skip; it is shortened for people who turn off animations in their system settings.
+
 - **Member sheet** with the same columns as the Excel sheet: No, Hierarchy, Family, Class, Specialist, Namelist, Mon/Tue/Wed, Total, Status, Pending Qty, Adv Submission, Due Submission, Remarks.
 - **Automatic calculation** of totals, status (Completed / Pending / N/A) and pending qty, with a red bar showing how much is still owed.
 - **Quotas per specialist** (editable under *Quotas*):
