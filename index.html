@@ -34,6 +34,7 @@
         <option>Completed</option>
         <option>Pending</option>
         <option>KIV</option>
+        <option>Leave</option>
         <option>N/A</option>
       </select>
       <span class="spacer"></span>
@@ -94,10 +95,13 @@
         <label>Family<input name="family" list="dlFamily"></label>
         <label>Class<input name="cls" list="dlClass"></label>
         <label>Specialist<select name="specialist" id="specialistSelect"></select></label>
-        <label>Remarks<input name="remarks"></label>
         <label>Discord User ID<input name="discordId" inputmode="numeric" placeholder="e.g. 123456789012345678"></label>
         <label class="check"><input type="checkbox" name="exempt"> Exempt (no quota / N/A)</label>
-        <label class="check"><input type="checkbox" name="kiv"> KIV (keep in view)</label>
+        <label>Status<select name="away">
+          <option value="">Active</option>
+          <option value="KIV">KIV (keep in view)</option>
+          <option value="Leave">Leave</option>
+        </select></label>
       </div>
       <datalist id="dlHierarchy"></datalist>
       <datalist id="dlFamily"></datalist>
@@ -156,7 +160,7 @@
         <li>This week is saved to history (read-only).</li>
         <li>Daily submissions reset to 0.</li>
         <li><b>Adv Submission</b> (extra above the requirement) is automatically deducted from next week's quota, and any leftover keeps rolling to the following weeks.</li>
-        <li>Any shortfall becomes <b>Due Submission</b> (not for KIV or exempt members).</li>
+        <li>Any shortfall becomes <b>Due Submission</b> (not for KIV, Leave or exempt members).</li>
       </ul>
       <div class="actions">
         <span class="spacer"></span>

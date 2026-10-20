@@ -11,11 +11,12 @@ A browser-based version of the weekly submission sheet. No install and no server
   - Melee = 250 pcs/week
   - Melee & Shooter = 100 pcs/week
   - Farming = 250 pcs/week
-- **Exempt** members (e.g. Oyabun/Aneki) show N/A. **KIV** members are shaded dark and left out of the pending count.
-- **Automatic advance**: enter what a member actually gives each day. Anything above the requirement shows as **Adv Submission** (with *Adv - WK..* in Remarks) and is automatically deducted from next week's quota; any leftover keeps rolling to the following weeks until it is used up. E.g. Ryu gives 1255 in WK43 (quota 250) → 1005 advance covers WK44, WK45, WK46 and part of WK47.
-- **Start next week**: saves the current week to history, resets the daily numbers, carries the advance forward, and turns any shortfall into **Due Submission** (not for KIV or exempt members).
+- **Exempt** members (e.g. Oyabun/Aneki) show N/A.
+- **KIV / Leave**: pick it from the Status dropdown on each row. A KIV (dark) or Leave (blue) member has no quota that week. They are not counted as pending, not tagged on Discord and get no Due Submission, and their advance stays whole. Set it back to *Active* when they return.
+- **Automatic advance**: enter what a member actually gives each day. Anything above the requirement shows as **Adv Submission**, and **Remarks** fills in automatically with how many weeks it covers (e.g. *Adv 4 Week (WK44–WK47) +5pcs*). It is automatically deducted from next week's quota; any leftover keeps rolling to the following weeks until it is used up. E.g. Ryu gives 1255 in WK43 (quota 250) → 1005 advance covers WK44, WK45, WK46 and part of WK47.
+- **Start next week**: saves the current week to history, resets the daily numbers, carries the advance forward, and turns any shortfall into **Due Submission** (not for KIV, Leave or exempt members).
 - **Class & Specialist** can be changed straight in the table (Class has suggestions, Specialist is a dropdown of the quota list). Quota and status recalculate immediately.
-- **Tag pending on Discord**: sends a reminder to a Discord channel through a webhook, tagging every member still Pending (KIV excluded) and how many pcs each is short. Shows a preview first.
+- **Tag pending on Discord**: sends a reminder to a Discord channel through a webhook, tagging every member still Pending (KIV/Leave excluded) and how many pcs each is short. Shows a preview first.
   - Webhook: Discord *Server Settings → Integrations → Webhooks → New Webhook* → choose channel → *Copy Webhook URL*, then paste it in the dialog (saved for next time).
   - To tag someone, add their **Discord User ID** via *Edit* (Discord *Settings → Advanced → Developer Mode*, then right-click the user → *Copy User ID*). Members without an ID are listed by name only.
   - Only the listed users are pinged — never @everyone, @here or roles.

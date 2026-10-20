@@ -155,7 +155,8 @@ thead th.sorted::after { content: " ▲"; font-size: 10px; }
 thead th.sorted.desc::after { content: " ▼"; }
 tbody tr:nth-child(even) td { background: var(--stripe); }
 tbody tr.kiv td { background: var(--kiv-bg) !important; color: var(--kiv-text); }
-tbody tr.kiv input { background: #666; color: #fff; border-color: #777; }
+tbody tr.kiv input, tbody tr.kiv select { background: #666; color: #fff; border-color: #777; }
+tbody tr.leave td { background: #e3e9f7 !important; color: #3d4a66; }
 
 td input.num {
   width: 70px;
@@ -171,6 +172,13 @@ td input:disabled { background: transparent; border-color: transparent; color: i
 .status.Completed { color: var(--ok); background: var(--ok-bg); }
 .status.Pending { color: var(--warn); background: var(--warn-bg); }
 .status.NA { color: var(--muted); }
+.status.KIV, .status.Leave { color: #444; background: #ddd; }
+.status-sel { font-weight: 600; font-size: 12px; padding: 2px 6px; border-radius: 10px; cursor: pointer; }
+.status-sel.Completed { color: var(--ok); background: var(--ok-bg); border-color: #b9e2c9; }
+.status-sel.Pending { color: var(--warn); background: var(--warn-bg); border-color: #f3c0c0; }
+.status-sel.KIV { color: #fff; background: #222; border-color: #222; }
+.status-sel.Leave { color: #fff; background: #4a5f8f; border-color: #4a5f8f; }
+.status-sel option { color: var(--text); background: #fff; }
 
 .pending { display: flex; align-items: center; gap: 6px; justify-content: flex-end; }
 .pending .bar { display: inline-block; width: 50px; height: 16px; }
@@ -179,8 +187,7 @@ td input:disabled { background: transparent; border-color: transparent; color: i
 
 .name { font-weight: 500; }
 .from-adv { color: var(--ok); font-size: 11px; }
-.remarks { display: flex; gap: 6px; align-items: center; justify-content: flex-end; }
-.adv-tag { font-weight: 600; font-size: 12px; }
+.adv-tag { font-weight: 600; font-size: 12px; text-align: left; }
 tfoot td { font-weight: 700; background: #fff; border-top: 2px solid var(--text); }
 tfoot tr.week td { background: #dce9c8; color: #222; }
 

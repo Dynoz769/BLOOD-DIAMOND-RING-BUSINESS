@@ -17,7 +17,7 @@
   // ---------- Sample data (Week 43 sheet) ----------
   function sampleState() {
     const rows = [
-      // hierarchy, family, class, specialist, name, mon, tue, wed, remarks, exempt, kiv
+      // hierarchy, family, class, specialist, name, mon, tue, wed, (unused), exempt, kiv
       // Daily figures include any extra given (e.g. Ryu gave 1255 = 250 quota + 1005 advance).
       ['Oyabun', 'Nakamura', 'Kumicho', '-', 'Don Nakamura', 0, 0, 0, '', true, false],
       ['Aneki', 'Kizuna', 'Oka-San', 'Melee', 'Leia Yuki', 0, 0, 0, '', true, false],
@@ -47,7 +47,7 @@
       ['Kyoudai', 'Shinigami', 'Kage', 'Shooter', 'Lao D. Shinigami', 0, 151, 0, '', false, false],
     ];
     return {
-      version: 2,
+      version: 3,
       week: 43,
       quotas: { 'Shooter': 150, 'Melee': 250, 'Melee & Shooter': 100, 'Farming': 250 },
       members: rows.map((r, i) => ({
@@ -55,7 +55,7 @@
         order: i,
         hierarchy: r[0], family: r[1], cls: r[2], specialist: r[3], name: r[4],
         days: { mon: r[5], tue: r[6], wed: r[7] },
-        carry: 0, due: 0, remarks: r[8], exempt: r[9], kiv: r[10],
+        carry: 0, due: 0, exempt: r[9], away: r[10] ? 'KIV' : '',
       })),
       history: [],
     };
@@ -79,16 +79,17 @@
     return sampleState();
   }
   // v1 had a manual Adv Submission and a separate Credit B/F; both become carry-forward.
+  // v2 had free-text remarks and a KIV checkbox; v3 has auto remarks and away = '' | 'KIV' | 'Leave'.
   function migrate(s) {
-    if (s.version === 2) return s;
+    if (s.version === 3) return s;
     const fix = m => {
       if (m.carry == null) m.carry = (Number(m.credit) || 0) + (Number(m.adv) || 0);
-      delete m.credit; delete m.adv;
-      if (/^Adv\b/i.test(m.remarks || '')) m.remarks = '';
+      if (m.away == null) m.away = m.kiv ? 'KIV' : '';
+      delete m.credit; delete m.adv; delete m.kiv; delete m.remarks;
     };
     s.members.forEach(fix);
     (s.history || []).forEach(h => h.members.forEach(fix));
-    s.version = 2;
+    s.version = 3;
     return s;
   }
   function save() {
@@ -113,24 +114,37 @@
   // carry  = extra from earlier weeks, used automatically before this week's pcs
   // total  = what counts for this week (capped at the requirement)
   // adv    = anything above the requirement; pushed to next week on rollover
+  // A member on KIV or Leave has no requirement that week, so their advance is kept whole.
   function calc(m, quotas, week) {
     const given = DAYS.reduce((s, d) => s + (Number(m.days[d.key]) || 0), 0);
     const carry = Number(m.carry) || 0;
     const quota = quotas[m.specialist];
     if (m.exempt || quota == null) {
-      return { given, carry: 0, total: given, quota: null, required: 0, status: 'N/A', pending: null, adv: 0, advWeek: null };
+      return { given, carry: 0, total: given, quota: null, required: 0, status: 'N/A', pending: null, adv: 0, advNote: '' };
+    }
+    const available = given + carry;
+    if (m.away) {
+      return { given, carry: 0, total: 0, quota, required: 0, status: m.away, pending: null, adv: available, advNote: advNote(available, quota, week) };
     }
     const required = quota + (Number(m.due) || 0);
-    const available = given + carry;
     const adv = Math.max(0, available - required);
     return {
       given, carry, quota, required, adv,
       total: Math.min(available, required),
       status: available >= required ? 'Completed' : 'Pending',
       pending: Math.min(0, available - required),
-      // last week the advance reaches into (a partial week still counts)
-      advWeek: adv > 0 && quota > 0 ? week + Math.max(1, Math.floor(adv / quota)) : null,
+      advNote: advNote(adv, quota, week),
     };
+  }
+
+  // Auto remark: how many future weeks the advance covers, e.g. "Adv 4 Week (WK44–WK47) +5pcs".
+  function advNote(adv, quota, week) {
+    if (!adv || !quota) return '';
+    const full = Math.floor(adv / quota);
+    const rest = adv - full * quota;
+    if (!full) return `Adv ${rest}pcs (WK${week + 1})`;
+    const range = full === 1 ? `WK${week + 1}` : `WK${week + 1}–WK${week + full}`;
+    return `Adv ${full} Week (${range})${rest ? ` +${rest}pcs` : ''}`;
   }
 
   // ---------- Rendering ----------
@@ -180,8 +194,7 @@
       if (q && !m.name.toLowerCase().includes(q)) return false;
       if (fam && m.family !== fam) return false;
       if (spec && m.specialist !== spec) return false;
-      if (st === 'KIV' && !m.kiv) return false;
-      if (st && st !== 'KIV' && c.status !== st) return false;
+      if (st && c.status !== st) return false;
       return true;
     });
     const key = sort.key;
@@ -213,14 +226,21 @@
       const na = c.status === 'N/A';
       const dayCells = DAYS.map(d => `<td>${na && !m.days[d.key] && !editable ? '-' : numInput(m.id, 'day.' + d.key, m.days[d.key], !editable)}</td>`).join('');
       let pendingCell = '-';
-      if (!na) {
+      if (c.pending != null) {
         const w = Math.min(100, Math.round((-c.pending / maxQuota) * 100));
         pendingCell = `<div class="pending"><span class="val">${c.pending}</span><span class="bar">${w ? `<i style="width:${w}%"></i>` : ''}</span></div>`;
       }
       const statusCls = na ? 'NA' : c.status;
       const specs = ['-', ...Object.keys(quotas)];
       if (!specs.includes(m.specialist)) specs.push(m.specialist);
-      return `<tr class="${m.kiv ? 'kiv' : ''}">
+      const statusCell = editable && !na
+        ? `<select class="status-sel ${statusCls}" data-id="${m.id}" data-field="away" title="Set KIV / Leave">
+            <option value="" ${m.away ? '' : 'selected'}>${m.away ? 'Active' : c.status}</option>
+            <option ${m.away === 'KIV' ? 'selected' : ''}>KIV</option>
+            <option ${m.away === 'Leave' ? 'selected' : ''}>Leave</option>
+          </select>`
+        : `<span class="status ${statusCls}">${c.status}</span>`;
+      return `<tr class="${m.away ? m.away.toLowerCase() : ''}">
         <td>${i + 1}</td>
         <td>${esc(m.hierarchy)}</td>
         <td>${esc(m.family)}</td>
@@ -229,11 +249,11 @@
         <td class="name" title="${c.quota != null ? `Quota ${c.quota}/week` : 'No quota'}">${esc(m.name)}</td>
         ${dayCells}
         <td title="${c.carry ? `Includes ${Math.min(c.carry, c.required)} pcs from earlier advance` : ''}"><b>${na && !c.total ? '-' : c.total}</b>${c.carry ? ` <small class="from-adv">(adv ${Math.min(c.carry, c.required)})</small>` : ''}</td>
-        <td><span class="status ${statusCls}">${c.status}</span></td>
+        <td>${statusCell}</td>
         <td>${pendingCell}</td>
         <td>${c.adv || ''}</td>
         <td>${na ? '' : numInput(m.id, 'due', m.due, !editable)}</td>
-        <td><div class="remarks">${c.advWeek ? `<span class="adv-tag">Adv - WK${c.advWeek}</span>` : ''}<input class="txt" data-id="${m.id}" data-field="remarks" value="${esc(m.remarks)}" ${editable ? '' : 'disabled'}></div></td>
+        <td class="adv-tag">${c.advNote}</td>
         <td class="noprint">${editable ? `<button class="btn small" data-edit="${m.id}">Edit</button>` : ''}</td>
       </tr>`;
     }).join('');
@@ -269,7 +289,7 @@
   }
 
   function renderStats(calcs, members) {
-    const active = calcs.filter((c, i) => c.status !== 'N/A' && !members[i].kiv);
+    const active = calcs.filter((c, i) => c.status !== 'N/A' && !members[i].away);
     const done = active.filter(c => c.status === 'Completed').length;
     const pending = active.length - done;
     const total = calcs.reduce((s, c) => s + c.total, 0);
@@ -278,13 +298,14 @@
     const short = active.reduce((s, c) => s + (c.pending || 0), 0);
     const target = active.reduce((s, c) => s + c.required, 0);
     const pct = active.length ? Math.round((done / active.length) * 100) : 0;
-    const kiv = members.filter(m => m.kiv).length;
+    const kiv = members.filter(m => m.away === 'KIV').length;
+    const leave = members.filter(m => m.away === 'Leave').length;
     $('#stats').innerHTML = `
       <div class="stat"><div class="k">Members with quota</div><div class="v">${active.length}</div></div>
       <div class="stat ok"><div class="k">Completed</div><div class="v">${done}</div>
         <div class="progress"><i style="width:${pct}%"></i></div></div>
       <div class="stat bad"><div class="k">Pending</div><div class="v">${pending}</div></div>
-      <div class="stat"><div class="k">KIV</div><div class="v">${kiv}</div></div>
+      <div class="stat"><div class="k">KIV / Leave</div><div class="v">${kiv} <small style="font-size:13px;color:var(--muted)">/ ${leave}</small></div></div>
       <div class="stat"><div class="k">Total submitted / target</div><div class="v">${total} <small style="font-size:13px;color:var(--muted)">/ ${target}</small></div></div>
       <div class="stat bad"><div class="k">Outstanding pcs</div><div class="v">${short}</div></div>
       <div class="stat"><div class="k">Pcs given this week</div><div class="v">${given}</div></div>
@@ -298,7 +319,7 @@
   }
 
   // ---------- Header sorting ----------
-  const sortKeys = ['order', 'hierarchy', 'family', 'cls', 'specialist', 'name', 'mon', 'tue', 'wed', 'total', 'status', 'pending', 'adv', 'due', 'remarks', ''];
+  const sortKeys = ['order', 'hierarchy', 'family', 'cls', 'specialist', 'name', 'mon', 'tue', 'wed', 'total', 'status', 'pending', 'adv', 'due', 'adv', ''];
   document.querySelectorAll('#sheet thead th').forEach((th, i) => {
     th.dataset.sort = sortKeys[i];
     if (!sortKeys[i]) return;
@@ -317,7 +338,7 @@
     const m = state.members.find(x => x.id === id);
     if (!m) return;
     const f = el.dataset.field;
-    if (f === 'remarks' || f === 'cls' || f === 'specialist') m[f] = el.value.trim();
+    if (f === 'away' || f === 'cls' || f === 'specialist') m[f] = el.value.trim();
     else {
       const v = Math.max(0, Math.floor(Number(el.value) || 0));
       if (f.startsWith('day.')) m.days[f.slice(4)] = v;
@@ -357,9 +378,8 @@
     f.family.value = m ? m.family : '';
     f.cls.value = m ? m.cls : 'Kage';
     f.specialist.value = m ? m.specialist : Object.keys(state.quotas)[0] || '-';
-    f.remarks.value = m ? m.remarks : '';
     f.exempt.checked = m ? m.exempt : false;
-    f.kiv.checked = m ? m.kiv : false;
+    f.away.value = m ? (m.away || '') : '';
     f.discordId.value = m ? (m.discordId || '') : '';
     memberDlg.showModal();
   }
@@ -368,8 +388,8 @@
     const f = $('#memberForm');
     const data = {
       name: f.name.value.trim(), hierarchy: f.hierarchy.value.trim(), family: f.family.value.trim(),
-      cls: f.cls.value.trim(), specialist: f.specialist.value, remarks: f.remarks.value,
-      exempt: f.exempt.checked, kiv: f.kiv.checked, discordId: f.discordId.value.replace(/\D/g, ''),
+      cls: f.cls.value.trim(), specialist: f.specialist.value,
+      exempt: f.exempt.checked, away: f.away.value, discordId: f.discordId.value.replace(/\D/g, ''),
     };
     if (!data.name) return;
     if (editingId) Object.assign(state.members.find(x => x.id === editingId), data);
@@ -428,7 +448,7 @@
     state.history.push({ week: state.week, quotas: { ...state.quotas }, members: JSON.parse(JSON.stringify(state.members)) });
     state.members.forEach(m => {
       const c = calc(m, state.quotas, state.week);
-      const carryDue = c.status === 'Pending' && !m.kiv ? -c.pending : 0;
+      const carryDue = c.status === 'Pending' ? -c.pending : 0;
       m.carry = c.adv;
       m.due = carryDue;
       DAYS.forEach(d => { m.days[d.key] = 0; });
@@ -445,7 +465,7 @@
   function pendingMembers() {
     return viewedMembers()
       .map(m => ({ m, c: calc(m, viewedQuotas(), viewWeek) }))
-      .filter(({ m, c }) => c.status === 'Pending' && !m.kiv);
+      .filter(({ c }) => c.status === 'Pending');
   }
 
   // Returns an array of message strings, each under Discord's length limit.
@@ -546,13 +566,12 @@
   function exportCsv() {
     const quotas = viewedQuotas();
     const head = ['No', 'Hierarchy', 'Family', 'Class', 'Specialist', 'Namelist', ...DAYS.map(d => d.label),
-      'Total submission', 'Status', 'Pending Qty', 'Adv Submission', 'Due Submission', 'Remarks', 'KIV'];
+      'Total submission', 'Status', 'Pending Qty', 'Adv Submission', 'Due Submission', 'Remarks'];
     const q = v => `"${String(v == null ? '' : v).replace(/"/g, '""')}"`;
     const lines = [head.map(q).join(',')];
     filtered().forEach(({ m, c }, i) => {
       lines.push([i + 1, m.hierarchy, m.family, m.cls, m.specialist, m.name, ...DAYS.map(d => m.days[d.key]),
-        c.total, c.status, c.pending == null ? '-' : c.pending, c.adv, m.due,
-        [c.advWeek ? `Adv - WK${c.advWeek}` : '', m.remarks].filter(Boolean).join('; '), m.kiv ? 'Yes' : '']
+        c.total, c.status, c.pending == null ? '-' : c.pending, c.adv, m.due, c.advNote]
         .map(q).join(','));
     });
     download(`blood-diamond-week${viewWeek}.csv`, lines.join('\r\n'), 'text/csv');
