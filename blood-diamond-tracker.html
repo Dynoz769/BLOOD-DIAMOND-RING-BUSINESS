@@ -924,6 +924,8 @@ table.ids input { width: 100%; }
   }
 
   function renderStats(calcs, members) {
+    // Everyone with a quota counts, including KIV/Leave; completed/pending only look at active members.
+    const withQuota = calcs.filter(c => c.status !== 'N/A').length;
     const active = calcs.filter((c, i) => c.status !== 'N/A' && !members[i].away);
     const done = active.filter(c => c.status === 'Completed').length;
     const pending = active.length - done;
@@ -936,7 +938,7 @@ table.ids input { width: 100%; }
     const kiv = members.filter(m => m.away === 'KIV').length;
     const leave = members.filter(m => m.away === 'Leave').length;
     $('#stats').innerHTML = `
-      <div class="stat"><div class="k">Members with quota</div><div class="v">${active.length}</div></div>
+      <div class="stat"><div class="k">Members with quota</div><div class="v">${withQuota}${withQuota !== active.length ? ` <small style="font-size:13px;color:var(--muted)">/ ${active.length} active</small>` : ''}</div></div>
       <div class="stat ok"><div class="k">Completed</div><div class="v">${done}</div>
         <div class="progress"><i style="width:${pct}%"></i></div></div>
       <div class="stat bad"><div class="k">Pending</div><div class="v">${pending}</div></div>
