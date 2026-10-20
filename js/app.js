@@ -795,7 +795,14 @@
     return true;
   }
 
-  if (!startCloud()) setCloudStatus('● Local only (this browser)', '');
+  if (!startCloud()) {
+    if (window.BDRB_FIREBASE_CONFIG) {
+      // config is there but the Firebase scripts did not load (offline, ad blocker, Brave Shields…)
+      setCloudStatus('● Database blocked – offline, ad blocker? Changes stay in this browser', 'bad');
+    } else {
+      setCloudStatus('● Local only (this browser)', '');
+    }
+  }
 
   render();
 })();
