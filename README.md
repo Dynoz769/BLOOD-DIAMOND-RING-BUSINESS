@@ -41,26 +41,22 @@ A browser-based version of the weekly submission sheet. No install and no server
 
 **Without Firebase** (default, `js/firebase-config.js` is `null`): data is saved in the browser's local storage, so it stays on that device and browser. Use **More → Download backup / Restore backup** to move it. The backup also contains the Discord webhook URL; anyone who has that URL can post to your channel, so share backups only with people you trust.
 
-**With Firebase** (shared online database): admins log in with email + password, and every change syncs live to everyone who has the page open. The top bar shows the status (● Online / Saving / Not saved).
+**With Firebase** (shared online database): every change syncs live to everyone who has the page open. The top bar shows the status (● Online / Saving / Not saved).
+
+- **No login** (default, `BDRB_REQUIRE_LOGIN = false`): anyone who opens the website can view **and edit** the data. Keep the link inside the family and download a backup regularly. The rules still refuse anything that is not a ledger, so the data cannot be wiped by deleting it.
+- **With login** (`BDRB_REQUIRE_LOGIN = true`): admins sign in with email + password, and only UIDs listed under `admins` can read or write.
 
 The first time you open it, the app loads the Week 43 data from the original sheet. **More → Reset to sample data** brings that data back. The same Week 43 data is also in `data/week-43.json`, which can be loaded with **More → Restore backup**.
 
 ### Firebase setup (one time, free)
 
-1. Go to https://console.firebase.google.com → **Add project**. Google Analytics is not needed.
-2. **Build → Realtime Database → Create database**. Pick the nearest location (e.g. Singapore) and start in **locked mode**.
-3. **Rules** tab: paste the contents of `database.rules.json` → **Publish**.
-4. **Build → Authentication → Get started → Email/Password → Enable**. Then **Users → Add user** for each admin and copy their **User UID**.
-5. Back in **Realtime Database → Data**: add a key `admins`, and under it add each admin UID with the value `true`:
-   ```
-   admins
-     ├─ AbCdEf123...: true
-     └─ XyZ987...:   true
-   ```
-6. **Project settings (⚙️) → General → Your apps → Web (</>)** → register the app → copy the `firebaseConfig` object into `js/firebase-config.js` (replace `null`). Include `databaseURL`.
-7. **Authentication → Settings → Authorized domains**: add `<user>.github.io` when hosting on GitHub Pages.
+1. Go to https://console.firebase.google.com → **Create a project**. Google Analytics is not needed.
+2. **Build → Realtime Database → Create database**. Pick **Singapore**, start in **locked mode**.
+3. **Rules** tab: paste the contents of `database.rules.json` (no login) or `database.rules.login.json` (login) → **Publish**.
+4. **Project settings (⚙️) → General → Your apps → Web (</>)** → register the app → copy the `firebaseConfig` object into `js/firebase-config.js` (replace `null`). Include `databaseURL`.
+5. Only with login: **Authentication → Email/Password → Enable**, add a user per admin, put each UID under `admins` with value `true` in the Realtime Database, add `<user>.github.io` under **Authentication → Settings → Authorized domains**, and set `BDRB_REQUIRE_LOGIN = true`.
 
-The first admin who logs in to an empty database uploads the data from their browser. Firebase web config values are not secret; access is protected by the login and the rules (only UIDs under `admins` can read or write).
+The first browser that connects to an empty database uploads its data. Firebase web config values are not secret.
 
 After changing files, run `python3 tools/build_single.py` to rebuild the single-file `blood-diamond-tracker.html`.
 
