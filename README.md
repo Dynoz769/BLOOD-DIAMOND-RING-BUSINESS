@@ -26,8 +26,9 @@ A browser-based version of the weekly submission sheet. No install and no server
 
   Kindly inform us if you face any difficulties nor issues or need more time completing this week's task. Any pending submissions will be carried forward to the following week.
 
-  @Ryouta @Takeru ... (pending members)
+  @HK | Ryouta @HK | Takeru Kurogawa (PEMANGGNG) ... (pending members)
   ```
+  - Names are written as **"HK | " + name** (prefix can be changed). If someone's Discord name is different, set it via *Edit → Discord name* (e.g. `HK | JIN MORI ( MONKEY KING )`); the names from the WK43 reminder are already filled in.
   - Pick Day1 / Day2 / Day3 - Final Day (today's day is chosen automatically). The title and the "Dear" tags can be changed, and you can still edit the text before copying.
   - To make a tag really ping, add the member's **Discord User ID** via *Edit* (Discord *Settings → Advanced → Developer Mode*, then right-click the user → *Copy User ID*). The message then contains `<@ID>`, which Discord turns into a mention when you send it. For roles, put `<@&RoleID>` in the "Dear" tags. Without an ID the name is written as plain text and does not ping.
   - Optional: paste a channel webhook URL to send it straight from the app. Only the users/roles in the message are pinged, never @everyone or @here.

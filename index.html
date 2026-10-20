@@ -96,6 +96,7 @@
         <label>Class<input name="cls" list="dlClass"></label>
         <label>Specialist<select name="specialist" id="specialistSelect"></select></label>
         <label>Discord User ID<input name="discordId" inputmode="numeric" placeholder="e.g. 123456789012345678"></label>
+        <label>Discord name<input name="discordName" placeholder="HK | Name"></label>
         <label class="check"><input type="checkbox" name="exempt"> Exempt (no quota / N/A)</label>
         <label>Status<select name="away">
           <option value="">Active</option>
@@ -123,10 +124,11 @@
       <div class="grid">
         <label>Day<select name="day"></select></label>
         <label>Title<input name="title"></label>
-        <label class="span2">"Dear" tags
+        <label>Name prefix<input name="prefix" placeholder="HK | "></label>
+        <label>"Dear" tags
           <input name="greet" placeholder="@NAKAMA @HYOUKA">
-          <span class="hint">To really ping a role, use &lt;@&amp;RoleID&gt; (right-click the role → Copy Role ID).</span>
         </label>
+        <p class="hint span2">To really ping a role, use &lt;@&amp;RoleID&gt; (right-click the role → Copy Role ID). Each member's own Discord name can be set via Edit → Discord name.</p>
         <p id="discordMissing" class="note span2" hidden></p>
         <label class="span2">Message (you can still edit it here before copying)
           <textarea id="discordPreview" rows="14"></textarea>

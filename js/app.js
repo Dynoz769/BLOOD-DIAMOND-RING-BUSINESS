@@ -8,6 +8,16 @@
   const CLASSES = ['Kumicho', 'Oka-San', 'Kigyo-Shatei', 'Wakagashira', 'Jun-Kouseiin', 'Kage', 'Wakashu'];
   const DISCORD_WEBHOOK_RE = /^https:\/\/(?:(?:ptb|canary)\.)?discord(?:app)?\.com\/api\/webhooks\/\d+\/[\w-]+/;
   const DISCORD_LIMIT = 1900;   // Discord allows 2000 chars per message; keep some margin
+  // Discord names that differ from "<prefix><name>" (taken from the family's Discord).
+  const KNOWN_DISCORD_NAMES = {
+    'Ryouta Kurogawa': 'HK | Ryouta',
+    'Takeru Kurogawa': 'HK | Takeru Kurogawa (PEMANGGNG)',
+    'Jin Mori': 'HK | JIN MORI ( MONKEY KING )',
+    'Shin Nightingale': 'HK | SHIN ( MULUT PUAKA )',
+    'Ash Lee Astrid ARK': 'HK | Ash Lee ARK',
+    'Supreme Toman Astrid ARK': 'HK | Supreme ARK',
+    'El Tiger': 'HK | Eltiger',
+  };
   const DAYS = [
     { key: 'mon', label: 'Monday' },
     { key: 'tue', label: 'Tuesday' },
@@ -47,7 +57,7 @@
       ['Kyoudai', 'Shinigami', 'Kage', 'Shooter', 'Lao D. Shinigami', 0, 151, 0, '', false, false],
     ];
     return {
-      version: 3,
+      version: 4,
       week: 43,
       quotas: { 'Shooter': 150, 'Melee': 250, 'Melee & Shooter': 100, 'Farming': 250 },
       members: rows.map((r, i) => ({
@@ -56,6 +66,7 @@
         hierarchy: r[0], family: r[1], cls: r[2], specialist: r[3], name: r[4],
         days: { mon: r[5], tue: r[6], wed: r[7] },
         carry: 0, due: 0, exempt: r[9], away: r[10] ? 'KIV' : '',
+        discordName: KNOWN_DISCORD_NAMES[r[4]] || '',
       })),
       history: [],
     };
@@ -80,16 +91,18 @@
   }
   // v1 had a manual Adv Submission and a separate Credit B/F; both become carry-forward.
   // v2 had free-text remarks and a KIV checkbox; v3 has auto remarks and away = '' | 'KIV' | 'Leave'.
+  // v4 adds discordName.
   function migrate(s) {
-    if (s.version === 3) return s;
+    if (s.version === 4) return s;
     const fix = m => {
       if (m.carry == null) m.carry = (Number(m.credit) || 0) + (Number(m.adv) || 0);
       if (m.away == null) m.away = m.kiv ? 'KIV' : '';
+      if (m.discordName == null) m.discordName = KNOWN_DISCORD_NAMES[m.name] || '';
       delete m.credit; delete m.adv; delete m.kiv; delete m.remarks;
     };
     s.members.forEach(fix);
     (s.history || []).forEach(h => h.members.forEach(fix));
-    s.version = 3;
+    s.version = 4;
     return s;
   }
   function save() {
@@ -381,6 +394,8 @@
     f.exempt.checked = m ? m.exempt : false;
     f.away.value = m ? (m.away || '') : '';
     f.discordId.value = m ? (m.discordId || '') : '';
+    f.discordName.value = m ? (m.discordName || '') : '';
+    f.discordName.placeholder = `${settings().prefix}${m ? m.name : 'Name'}`;
     memberDlg.showModal();
   }
   memberDlg.addEventListener('close', () => {
@@ -390,6 +405,7 @@
       name: f.name.value.trim(), hierarchy: f.hierarchy.value.trim(), family: f.family.value.trim(),
       cls: f.cls.value.trim(), specialist: f.specialist.value,
       exempt: f.exempt.checked, away: f.away.value, discordId: f.discordId.value.replace(/\D/g, ''),
+      discordName: f.discordName.value.trim(),
     };
     if (!data.name) return;
     if (editingId) Object.assign(state.members.find(x => x.id === editingId), data);
@@ -462,7 +478,7 @@
   // The message follows the family's usual reminder text. It can be copied and pasted
   // into Discord by hand, or (optionally) posted through a webhook.
   const discordDlg = $('#discordDlg');
-  const DISCORD_DEFAULTS = { webhook: '', title: 'HOKAI FAMILY BUSINESS', greet: '@NAKAMA @HYOUKA' };
+  const DISCORD_DEFAULTS = { webhook: '', title: 'HOKAI FAMILY BUSINESS', greet: '@NAKAMA @HYOUKA', prefix: 'HK | ' };
   const settings = () => (state.settings = { ...DISCORD_DEFAULTS, ...(state.settings || {}) });
 
   function pendingMembers() {
@@ -478,7 +494,8 @@
   }
 
   // <@id> turns into a real mention once sent from Discord; without an ID only the name is written.
-  const mention = m => (m.discordId ? `<@${m.discordId}>` : `@${m.name}`);
+  const discordName = m => m.discordName || `${settings().prefix}${m.name}`;
+  const mention = m => (m.discordId ? `<@${m.discordId}>` : `@${discordName(m)}`);
 
   function buildDiscordMessage(day) {
     const st = settings();
@@ -503,6 +520,7 @@
     const st = settings();
     st.title = f.title.value.trim() || DISCORD_DEFAULTS.title;
     st.greet = f.greet.value.trim();
+    st.prefix = f.prefix.value;
     save();
     $('#discordPreview').value = buildDiscordMessage(Number(f.day.value));
   }
@@ -513,6 +531,7 @@
     f.webhook.value = st.webhook;
     f.title.value = st.title;
     f.greet.value = st.greet;
+    f.prefix.value = st.prefix;
     f.day.innerHTML = DAYS.map((d, i) => `<option value="${i + 1}">Day${i + 1}${i === DAYS.length - 1 ? ' - Final Day' : ''} (${d.label})</option>`).join('');
     f.day.value = String(defaultDay());
     const missing = pendingMembers().filter(({ m }) => !m.discordId).map(({ m }) => m.name);
@@ -588,7 +607,7 @@
   $('#discordCopyBtn').addEventListener('click', copyDiscord);
   $('#discordSendBtn').addEventListener('click', sendDiscord);
   $('#discordCancelBtn').addEventListener('click', () => discordDlg.close());
-  ['title', 'greet', 'day'].forEach(n => $('#discordForm')[n].addEventListener('input', refreshDiscordPreview));
+  ['title', 'greet', 'prefix', 'day'].forEach(n => $('#discordForm')[n].addEventListener('input', refreshDiscordPreview));
 
   // ---------- More menu ----------
   const menu = $('#moreMenu');
